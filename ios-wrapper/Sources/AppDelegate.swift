@@ -1,0 +1,17 @@
+import UIKit
+
+@main
+final class AppDelegate: UIResponder, UIApplicationDelegate {
+    var window: UIWindow?
+
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        let mainWindow = UIWindow(frame: UIScreen.main.bounds)
+        mainWindow.rootViewController = CraftWebViewController()
+        mainWindow.makeKeyAndVisible()
+        self.window = mainWindow
+        return true
+    }
+}

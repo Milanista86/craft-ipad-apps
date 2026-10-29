@@ -1,0 +1,232 @@
+name: Build iPadOS Apps (.ipa)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_mode:
+        description: "Try pre-built Web release first (fast) or compile Rust from source"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - source
+
+jobs:
+  build-ipa:
+    name: Build ${{ matrix.app_name }} (.ipa)
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: photocraft
+            repo: storytold/photocraft
+            app_name: PhotoCraft
+            bundle_id: com.craftsuite.photocraft
+            bg_hex: "001E36"
+            fg_hex: "31A8FF"
+            label: "Ps"
+          - id: wordcraft
+            repo: storytold/wordcraft
+            app_name: WordCraft
+            bundle_id: com.craftsuite.wordcraft
+            bg_hex: "103F91"
+            fg_hex: "41A5EE"
+            label: "W"
+          - id: pdfcraft
+            repo: storytold/pdfcraft
+            app_name: PdfCraft
+            bundle_id: com.craftsuite.pdfcraft
+            bg_hex: "3B0604"
+            fg_hex: "FF3B30"
+            label: "PDF"
+
+    steps:
+      - name: Checkout iPad Wrapper Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch or Compile WebAssembly Bundle (${{ matrix.app_name }})
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          rm -rf ios-wrapper/www
+          mkdir -p ios-wrapper/www
+
+          DOWNLOADED=0
+          if [ "${{ inputs.build_mode }}" != "source" ]; then
+            echo "Checking latest GitHub release of ${{ matrix.repo }} for pre-built web zip..."
+            ASSET_NAME=$(gh release view --repo "${{ matrix.repo }}" --json assets --jq '.assets[].name' 2>/dev/null | grep -iE 'web.*\.zip$' | head -n 1 || true)
+            if [ -n "$ASSET_NAME" ]; then
+              echo "Found pre-built web asset: $ASSET_NAME"
+              gh release download --repo "${{ matrix.repo }}" --pattern "$ASSET_NAME" --dir /tmp/web-release
+              mkdir -p /tmp/web-extracted
+              unzip -q "/tmp/web-release/$ASSET_NAME" -d /tmp/web-extracted
+              INDEX_FILE=$(find /tmp/web-extracted -name "index.html" | head -n 1)
+              if [ -n "$INDEX_FILE" ]; then
+                BUNDLE_DIR=$(dirname "$INDEX_FILE")
+                cp -R "$BUNDLE_DIR"/. ios-wrapper/www/
+                DOWNLOADED=1
+                echo "Successfully unpacked pre-built web bundle into ios-wrapper/www"
+              fi
+            fi
+          fi
+
+          if [ "$DOWNLOADED" -eq 0 ]; then
+            echo "Building ${{ matrix.repo }} from Rust source to WebAssembly..."
+            rustup target add wasm32-unknown-unknown
+            if ! command -v trunk >/dev/null 2>&1; then
+              curl -LsSf https://github.com/trunk-rs/trunk/releases/latest/download/trunk-aarch64-apple-darwin.tar.gz | tar -xzf - -C "$HOME/.cargo/bin"
+            fi
+
+            git clone --depth 1 "https://github.com/${{ matrix.repo }}.git" /tmp/craft-src
+            cd /tmp/craft-src
+
+            if [ -f "apps/${{ matrix.id }}-web/index.html" ]; then
+              WEB_DIR="apps/${{ matrix.id }}-web"
+            else
+              INDEX_PATH=$(find . -maxdepth 4 -name "index.html" -exec grep -l "data-trunk" {} + | head -n 1)
+              if [ -z "$INDEX_PATH" ]; then
+                INDEX_PATH=$(find . -maxdepth 4 -name "index.html" | head -n 1)
+              fi
+              WEB_DIR=$(dirname "$INDEX_PATH")
+            fi
+
+            echo "Running trunk build --release --public-url ./ in $WEB_DIR..."
+            cd "$WEB_DIR"
+            trunk build --release --public-url ./
+            cp -R dist/. "$GITHUB_WORKSPACE/ios-wrapper/www/"
+          fi
+
+          echo "Verifying ios-wrapper/www contents:"
+          ls -la "$GITHUB_WORKSPACE/ios-wrapper/www"
+          test -f "$GITHUB_WORKSPACE/ios-wrapper/www/index.html"
+
+      - name: Generate App Icon for ${{ matrix.app_name }}
+        run: |
+          ICON_SET="ios-wrapper/Sources/Assets.xcassets/AppIcon.appiconset"
+          mkdir -p "$ICON_SET"
+
+          cat > /tmp/make_icon.swift << 'EOF'
+          import AppKit
+
+          let args = CommandLine.arguments
+          let bgHex = args[1]
+          let fgHex = args[2]
+          let label = args[3]
+          let outPath = args[4]
+
+          func color(from hex: String) -> NSColor {
+              let v = Int(hex, radix: 16) ?? 0
+              let r = CGFloat((v >> 16) & 0xFF) / 255.0
+              let g = CGFloat((v >> 8) & 0xFF) / 255.0
+              let b = CGFloat(v & 0xFF) / 255.0
+              return NSColor(srgbRed: r, green: g, blue: b, alpha: 1.0)
+          }
+
+          let size = NSSize(width: 1024, height: 1024)
+          let rep = NSBitmapImageRep(
+              bitmapDataPlanes: nil,
+              pixelsWide: 1024,
+              pixelsHigh: 1024,
+              bitsPerSample: 8,
+              samplesPerPixel: 4,
+              hasAlpha: true,
+              isPlanar: false,
+              colorSpaceName: .deviceRGB,
+              bytesPerRow: 0,
+              bitsPerPixel: 0
+          )!
+
+          NSGraphicsContext.saveGraphicsState()
+          NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+
+          color(from: bgHex).setFill()
+          NSBezierPath(rect: NSRect(origin: .zero, size: size)).fill()
+
+          let insetRect = NSRect(x: 64, y: 64, width: 896, height: 896)
+          let borderPath = NSBezierPath(roundedRect: insetRect, xRadius: 180, yRadius: 180)
+          borderPath.lineWidth = 36
+          color(from: fgHex).setStroke()
+          borderPath.stroke()
+
+          let fontSize: CGFloat = label.count > 2 ? 330 : 460
+          let paragraph = NSMutableParagraphStyle()
+          paragraph.alignment = .center
+
+          let attrs: [NSAttributedString.Key: Any] = [
+              .font: NSFont.systemFont(ofSize: fontSize, weight: .bold),
+              .foregroundColor: color(from: fgHex),
+              .paragraphStyle: paragraph
+          ]
+
+          let attrStr = NSAttributedString(string: label, attributes: attrs)
+          let strSize = attrStr.size()
+          let drawRect = NSRect(
+              x: 0,
+              y: (1024 - strSize.height) / 2.0,
+              width: 1024,
+              height: strSize.height
+          )
+          attrStr.draw(in: drawRect)
+
+          NSGraphicsContext.restoreGraphicsState()
+
+          let pngData = rep.representation(using: .png, properties: [:])!
+          try! pngData.write(to: URL(fileURLWithPath: outPath))
+          EOF
+
+          swift /tmp/make_icon.swift "${{ matrix.bg_hex }}" "${{ matrix.fg_hex }}" "${{ matrix.label }}" "$ICON_SET/AppIcon.png"
+
+          cat > "$ICON_SET/Contents.json" << 'EOF'
+          {
+            "images" : [
+              {
+                "filename" : "AppIcon.png",
+                "idiom" : "universal",
+                "platform" : "ios",
+                "size" : "1024x1024"
+              }
+            ],
+            "info" : {
+              "author" : "xcode",
+              "version" : 1
+            }
+          }
+          EOF
+
+      - name: Build Unsigned iPadOS .ipa with Xcode
+        run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+
+          cd ios-wrapper
+          xcodegen generate
+
+          xcodebuild -project CraftiPadApp.xcodeproj \
+            -scheme CraftiPadApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            APP_NAME="${{ matrix.app_name }}" \
+            APP_DISPLAY_NAME="${{ matrix.app_name }}" \
+            APP_BUNDLE_ID="${{ matrix.bundle_id }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+          mkdir -p Payload
+          cp -R "build/Build/Products/Release-iphoneos/${{ matrix.app_name }}.app" Payload/
+          zip -r -y "$GITHUB_WORKSPACE/${{ matrix.app_name }}-iPad.ipa" Payload
+
+      - name: Upload ${{ matrix.app_name }}-iPad.ipa Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app_name }}-iPad-IPA
+          path: ${{ matrix.app_name }}-iPad.ipa
+          retention-days: 30
