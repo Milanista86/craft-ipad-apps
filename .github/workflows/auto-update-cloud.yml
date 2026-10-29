@@ -39,7 +39,6 @@ jobs:
             INDEX_FILE=$(find "/tmp/$app-ext" -name "index.html" | head -n 1)
             BUNDLE_DIR=$(dirname "$INDEX_FILE")
 
-            # Preserve existing icons, manifest, and patched index.html if needed
             cp "$app/icon.png" "/tmp/$app-icon.png"
             cp "$app/apple-touch-icon.png" "/tmp/$app-touch.png"
             cp "$app/manifest.json" "/tmp/$app-manifest.json"
@@ -53,12 +52,106 @@ jobs:
               gzip -dc "$PART" > "$app/photocraft-web_bg.wasm"
               cp "$app/app/photocraft-web.js" "$app/photocraft-web.js"
               rm -rf "$app/app" "$app"/photocraft-web-boot*
+              cat > "$app/index.html" << 'PCEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+            <title>PhotoCraft</title>
+            <script type="module">
+              import init, * as bindings from './photocraft-web.js';
+              try {
+                const wasm = await init({ module_or_path: './photocraft-web_bg.wasm' });
+                window.wasmBindings = bindings;
+                const loading = document.getElementById('photocraft_loading');
+                if (loading) loading.remove();
+                dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+              } catch (err) {
+                console.error("PhotoCraft init error:", err);
+                const loading = document.getElementById('photocraft_loading');
+                if (loading) loading.textContent = "Error starting PhotoCraft: " + err;
+              }
+            </script>
+            <style>
+              html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #262626; }
+              #photocraft_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+              #photocraft_loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                padding: 0 16px; text-align: center; color: #b8b8b8; font: 14px system-ui, sans-serif; pointer-events: none; }
+            </style>
+          </head>
+          <body>
+            <canvas id="photocraft_canvas"></canvas>
+            <div id="photocraft_loading"><p>Loading PhotoCraft&hellip;</p></div>
+          </body>
+          </html>
+          PCEOF
             fi
 
             cp "/tmp/$app-icon.png" "$app/icon.png"
             cp "/tmp/$app-touch.png" "$app/apple-touch-icon.png"
             cp "/tmp/$app-touch.png" "$app/apple-touch-icon-precomposed.png"
             cp "/tmp/$app-manifest.json" "$app/manifest.json"
+
+            python3 - "$app" << 'PYEOF'
+          import sys, re
+          app = sys.argv[1]
+          names = {"photocraft": "PhotoCraft", "wordcraft": "WordCraft", "pdfcraft": "PdfCraft"}
+          title_name = names.get(app, app)
+          p = f"{app}/index.html"
+          with open(p, "r", encoding="utf-8") as f:
+              html = f.read()
+          html = re.sub(r'\s+integrity="[^"]+"', '', html)
+          html = re.sub(r'<link rel="icon"[^>]+>', '', html)
+          html = re.sub(r'<link rel="preload"[^>]+type="application/wasm"[^>]*>', '', html)
+          pwa_head = f"""
+            <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="mobile-web-app-capable" content="yes">
+            <meta name="apple-mobile-web-app-status-bar-style" content="black">
+            <meta name="apple-mobile-web-app-title" content="{title_name}">
+            <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=3">
+            <link rel="apple-touch-icon" sizes="512x512" href="./icon.png?v=3">
+            <link rel="icon" type="image/png" sizes="180x180" href="./apple-touch-icon.png?v=3">
+            <link rel="manifest" href="./manifest.json?v=3">"""
+          html = re.sub(r'(<title>[^<]+</title>)', r'\1' + pwa_head, html, count=1)
+          helper = """<script>
+          (function() {
+            window.addEventListener("DOMContentLoaded", function() {
+              const style = document.createElement("style");
+              style.textContent = `
+                :root { --ipad-status-offset: max(env(safe-area-inset-top, 0px), 26px); }
+                html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; background: #1c1c1e !important; overscroll-behavior: none !important; -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; touch-action: none !important; }
+                #photocraft_canvas, #wordcraft_canvas, #pdfcraft, body > canvas { position: fixed !important; top: var(--ipad-status-offset) !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: calc(100% - var(--ipad-status-offset)) !important; display: block !important; touch-action: none !important; }
+                #craft-ipad-helper { position: fixed; right: 12px; bottom: 12px; z-index: 2147483647; display: flex; align-items: center; gap: 6px; background: rgba(24, 24, 28, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 999px; padding: 4px 8px; font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif; color: #f0f0f5; box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+                #craft-ipad-helper.collapsed .helper-btn { display: none; }
+                #craft-ipad-helper button { appearance: none; border: none; background: rgba(255, 255, 255, 0.12); color: #f0f0f5; padding: 6px 10px; border-radius: 999px; font: inherit; cursor: pointer; }
+                #craft-ipad-helper button.active { background: #0a84ff; color: #fff; }
+              `;
+              document.head.appendChild(style);
+              let rightClickArmed = false;
+              const bar = document.createElement("div");
+              bar.id = "craft-ipad-helper"; bar.className = "collapsed";
+              bar.innerHTML = `<button id="craft-rc-btn" class="helper-btn">Right-Click</button><button id="craft-kb-btn" class="helper-btn">⌨️</button><button id="craft-reload-btn" class="helper-btn">🔄</button><button id="craft-toggle-btn">⚙️</button>`;
+              document.body.appendChild(bar);
+              const rcBtn = document.getElementById("craft-rc-btn"), kbBtn = document.getElementById("craft-kb-btn"), reloadBtn = document.getElementById("craft-reload-btn"), toggleBtn = document.getElementById("craft-toggle-btn");
+              toggleBtn.addEventListener("pointerdown", function(e) { e.stopPropagation(); bar.classList.toggle("collapsed"); });
+              rcBtn.addEventListener("pointerdown", function(e) { e.stopPropagation(); rightClickArmed = !rightClickArmed; rcBtn.classList.toggle("active", rightClickArmed); });
+              kbBtn.addEventListener("pointerdown", function(e) { e.stopPropagation(); let input = document.querySelector("input, textarea"); if (!input) { input = document.createElement("input"); input.type = "text"; input.style.cssText = "position:fixed;opacity:0;pointer-events:none;left:0;top:0;width:1px;height:1px;"; document.body.appendChild(input); } input.focus(); });
+              reloadBtn.addEventListener("pointerdown", function(e) { e.stopPropagation(); window.location.reload(); });
+              window.addEventListener("pointerdown", function(e) {
+                if (!rightClickArmed || bar.contains(e.target)) return;
+                rightClickArmed = false; rcBtn.classList.remove("active"); e.stopImmediatePropagation(); e.preventDefault();
+                const opts = { bubbles: true, cancelable: true, clientX: e.clientX, clientY: e.clientY, screenX: e.screenX, screenY: e.screenY, button: 2, buttons: 2 };
+                e.target.dispatchEvent(new PointerEvent("pointerdown", opts)); e.target.dispatchEvent(new MouseEvent("mousedown", opts)); e.target.dispatchEvent(new MouseEvent("contextmenu", opts));
+                e.target.dispatchEvent(new PointerEvent("pointerup", { ...opts, buttons: 0 })); e.target.dispatchEvent(new MouseEvent("mouseup", { ...opts, buttons: 0 }));
+              }, true);
+            });
+          })();
+          </script>"""
+          html = html.replace("</head>", helper + "\n</head>")
+          with open(p, "w", encoding="utf-8") as f:
+              f.write(html)
+          PYEOF
           done
 
       - name: Commit & Push Updated Cloud Apps if Changed

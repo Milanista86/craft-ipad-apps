@@ -1,51 +1,106 @@
-# PhotoCraft, WordCraft & PdfCraft — Native iPadOS App Wrapper
+# Craft Suite for iPadOS
 
-This folder contains everything needed to build **PhotoCraft**, **WordCraft**, and **PdfCraft** into three standalone **`.ipa` iPad apps** (`PhotoCraft-iPad.ipa`, `WordCraft-iPad.ipa`, and `PdfCraft-iPad.ipa`) for your **iPad Pro M1** — **without needing a Mac**.
+<p align="center">
+  <img src="https://milanista86.github.io/craft-ipad-apps/photocraft/icon.png" width="84" alt="PhotoCraft Icon" style="border-radius: 18px; margin: 0 8px;" />
+  <img src="https://milanista86.github.io/craft-ipad-apps/wordcraft/icon.png" width="84" alt="WordCraft Icon" style="border-radius: 18px; margin: 0 8px;" />
+  <img src="https://milanista86.github.io/craft-ipad-apps/pdfcraft/icon.png" width="84" alt="PdfCraft Icon" style="border-radius: 18px; margin: 0 8px;" />
+</p>
+
+<p align="center">
+  <strong>Full Desktop PhotoCraft, WordCraft, and PdfCraft — Adapted for iPadOS</strong><br>
+  Run the complete desktop Rust + WebGPU/WebGL2 creative and office suite from <a href="https://github.com/storytold">storytold</a> natively on any modern iPad.
+</p>
+
+<p align="center">
+  <a href="https://milanista86.github.io/craft-ipad-apps/"><strong>🚀 Launch iPad Web App Hub</strong></a> ·
+  <a href="https://github.com/Milanista86/craft-ipad-apps/releases"><strong>📦 Download .ipa Releases</strong></a> ·
+  <a href="https://github.com/storytold"><strong>✨ Upstream Repositories</strong></a>
+</p>
 
 ---
 
-## How It Works (In Plain English)
+## Overview
 
-1. **GitHub's Free Cloud Mac Builds the Apps for You:**
-   Because Apple only allows building `.ipa` apps on macOS, this folder includes an automated workflow ([`.github/workflows/build-ipad-apps.yml`](.github/workflows/build-ipad-apps.yml)). When you upload this folder to your own GitHub account, GitHub spins up a free Mac in the cloud, grabs the latest WebAssembly engine of **PhotoCraft**, **WordCraft**, and **PdfCraft** from `storytold`, wraps each one inside our native Swift iPadOS app ([`ios-wrapper/`](ios-wrapper/)), and gives you 3 `.ipa` files to download.
-2. **100% Offline Desktop Engine on Your iPad Pro M1:**
-   Inside each `.ipa` app is an embedded localhost server ([`LocalAssetServer.swift`](ios-wrapper/Sources/LocalAssetServer.swift)) and a full-screen desktop view ([`CraftWebViewController.swift`](ios-wrapper/Sources/CraftWebViewController.swift)).
-   - **Opening files:** Works directly with the native **iPadOS Files app**.
-   - **Saving files (`.psd`, `.docx`, `.pdf`):** Automatically pops up the native iPadOS **"Save to Files"** sheet.
-   - **Touch & Apple Pencil Helper:** Includes a small `⚙️` button in the bottom-right corner so you can toggle **Right-Click** or open the **On-Screen Keyboard** when you aren't using a physical keyboard/mouse.
+The **[storytold](https://github.com/storytold)** project provides clean-room, open-source desktop applications written in pure Rust (`egui` + `eframe` + `wgpu`). While upstream releases target Windows, macOS, Linux, FreeBSD, and desktop browsers, iPad users normally face mobile viewport issues, iPadOS status bar overlaps, missing right-click/keyboard bridges, and lack of standalone `.ipa` or Home Screen packaging.
+
+**Craft Suite for iPadOS** bridges that gap for **all modern iPads** (iPad, iPad Air, iPad mini, and iPad Pro across Apple M-series and A-series chips running iPadOS 15+):
+
+| Application | Upstream Repo | Description | Live iPad App |
+| :--- | :--- | :--- | :--- |
+| **PhotoCraft** | [`storytold/photocraft`](https://github.com/storytold/photocraft) | Layered raster image & `.psd` editor | [Open PhotoCraft](https://milanista86.github.io/craft-ipad-apps/photocraft/) |
+| **WordCraft** | [`storytold/wordcraft`](https://github.com/storytold/wordcraft) | Ribbon-based word processor (`.docx`, `.odt`, `.rtf`) | [Open WordCraft](https://milanista86.github.io/craft-ipad-apps/wordcraft/) |
+| **PdfCraft** | [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) | PDF reader, page organizer, form & annotation workbench | [Open PdfCraft](https://milanista86.github.io/craft-ipad-apps/pdfcraft/) |
 
 ---
 
-## Step-by-Step Instructions (On Your Windows PC)
+## Key iPadOS Enhancements
 
-### Step 1: Create an Empty Repository on GitHub
-1. Open [https://github.com/new](https://github.com/new) in your browser and sign in.
-2. Under **Repository name**, type `craft-ipad-apps`.
-3. Leave everything else as default (do **not** check "Add a README file") and click **Create repository**.
-4. Copy the URL shown on the screen (it looks like `https://github.com/YOUR-USERNAME/craft-ipad-apps.git`).
+* **iPadOS Status Bar Safe-Area Layout:** Automatically offsets the application canvas below the iPadOS Status Bar and multitasking window controls so top menu bars (`File`, `Edit`, `Image`, `Layer`, `View`, etc.) are 100% accessible.
+* **Floating Touch & Apple Pencil Helper (`⚙️`):** Includes a collapsible corner tool pill providing:
+  * **Right-Click Toggle:** Tap `Right-Click` then touch anywhere on the canvas with your finger or Apple Pencil to trigger desktop context menus when using the iPad without a trackpad or mouse.
+  * **On-Screen Keyboard Trigger (`⌨️`):** Summon the native iPadOS software keyboard on demand when no hardware keyboard is attached.
+  * **One-Tap Reload (`🔄`):** Refresh and pull the latest upstream release directly inside the fullscreen Home Screen app.
+* **Native iPadOS Files Integration:** Opening and saving/exporting documents connects directly to the native **iPadOS Files** picker (`On My iPad`, `iCloud Drive`, and external USB-C drives).
+* **Official Full-Bleed App Icons:** Pre-configured with `storytold`'s official artwork formatted for iPadOS Home Screen squircle masking.
+* **Two Installation Modes:**
+  1. **Zero-PC Cloud Install (Recommended):** Add directly to your iPad Home Screen from Safari via GitHub Pages.
+  2. **Standalone `.ipa` Sideload:** Native Swift + `WKWebView` + loopback server (`NWListener`) `.ipa` bundles built automatically via GitHub Actions.
 
-### Step 2: Upload This Folder to GitHub
-1. Open your `For iPad` folder on your Desktop (`c:\Users\farou\Desktop\For iPad`).
-2. Double-click **`push-to-github.bat`**.
-3. Paste the GitHub URL you copied in Step 1 and press **Enter**.
-   *(Or simply paste the URL in our chat and I will push it for you automatically!)*
+---
 
-### Step 3: Download Your 3 `.ipa` Files from GitHub
-1. Go back to your GitHub repository page in your browser and click the **Actions** tab at the top.
-2. Click on the running workflow called **Build iPadOS Apps (.ipa)**.
-3. Once all three green checkmarks appear (`Build PhotoCraft (.ipa)`, `Build WordCraft (.ipa)`, `Build PdfCraft (.ipa)`), scroll down to the **Artifacts** section at the bottom of that page.
-4. Click to download:
-   - **`PhotoCraft-iPad-IPA`** (unzip it to get `PhotoCraft-iPad.ipa`)
-   - **`WordCraft-iPad-IPA`** (unzip it to get `WordCraft-iPad.ipa`)
-   - **`PdfCraft-iPad-IPA`** (unzip it to get `PdfCraft-iPad.ipa`)
+## Option 1: Instant iPad Home Screen Install (No Computer Required)
 
-### Step 4: Install the `.ipa` Files Onto Your iPad Pro M1 from Windows
-1. Download and install **[Sideloadly](https://sideloadly.io/)** on your Windows PC (it is the standard tool for signing and installing `.ipa` files on Windows using your Apple Developer account).
-   *(Make sure you also have the standard Windows versions of **iTunes** and **iCloud** installed—not the Microsoft Store versions—so Windows can talk to your iPad).*
-2. Plug your **iPad Pro M1** into your Windows PC with a USB-C cable (and tap **Trust This Computer** on your iPad if asked).
-3. Open **Sideloadly**:
-   - Enter your **Apple ID** (your Apple Developer account email).
-   - Drag **`PhotoCraft-iPad.ipa`** into the `.ipa` box on the left.
-   - Click **Start** (enter your Apple ID password on first use).
-4. Repeat the drag-and-click for **`WordCraft-iPad.ipa`** and **`PdfCraft-iPad.ipa`**.
-   Because each app has its own unique Bundle ID (`com.craftsuite.photocraft`, `com.craftsuite.wordcraft`, `com.craftsuite.pdfcraft`), all three will install side-by-side on your iPad Home Screen!
+Works on **any iPad running iPadOS 15 or newer**:
+
+1. Open **[https://milanista86.github.io/craft-ipad-apps/](https://milanista86.github.io/craft-ipad-apps/)** in **Safari** on your iPad.
+2. Tap **Open PhotoCraft**, **Open WordCraft**, or **Open PdfCraft** and wait a few seconds for the page to load.
+3. Tap the **Share** button in Safari (the square with an upward arrow) and select **Add to Home Screen**.
+4. Tap **Add**. Each app will appear on your iPad Home Screen with its official icon and launch **100% fullscreen** without browser toolbars.
+
+---
+
+## Option 2: Sideloading the Native `.ipa` Files
+
+If you prefer installing the standalone native iPadOS `.ipa` wrapper using an Apple Developer account (via [Sideloadly](https://sideloadly.io/), AltStore, Feather, or Xcode):
+
+1. Download **`PhotoCraft-iPad.ipa`**, **`WordCraft-iPad.ipa`**, and **`PdfCraft-iPad.ipa`** from the [**Releases**](https://github.com/Milanista86/craft-ipad-apps/releases) page (or from the latest [GitHub Actions](https://github.com/Milanista86/craft-ipad-apps/actions) run).
+2. Sign and install each `.ipa` onto your iPad using your preferred sideloading tool.
+3. Because each app uses a distinct Bundle Identifier (`com.craftsuite.photocraft`, `com.craftsuite.wordcraft`, `com.craftsuite.pdfcraft`), all three install side-by-side.
+
+---
+
+## Repository Structure
+
+```text
+├── .github/workflows/
+│   ├── build-ipad-apps.yml     # Cloud macOS Xcode builder producing unsigned .ipa bundles
+│   └── auto-update-cloud.yml   # Automated weekly & on-demand updater for GitHub Pages
+├── ios-wrapper/                # Native Swift iPadOS wrapper (XcodeGen project)
+│   ├── project.yml             # XcodeGen specification
+│   └── Sources/
+│       ├── AppDelegate.swift           # UIKit application lifecycle
+│       ├── CraftWebViewController.swift# Fullscreen WKWebView + Files export & touch bridge
+│       ├── LocalAssetServer.swift      # Offline 127.0.0.1 HTTP server (Network.framework)
+│       └── Info.plist                  # iPadOS orientations, Split View & Stage Manager config
+└── README.md
+```
+
+---
+
+## Automatic Updates
+
+This repository includes an automated workflow ([`.github/workflows/auto-update-cloud.yml`](.github/workflows/auto-update-cloud.yml)) that checks [`storytold/photocraft`](https://github.com/storytold/photocraft), [`storytold/wordcraft`](https://github.com/storytold/wordcraft), and [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) every week (and on manual trigger via the **Actions** tab) to keep the iPad builds synchronized with the latest upstream releases.
+
+---
+
+## Privacy & Security
+
+* **100% Local Execution:** All image editing, word processing, and PDF rendering run locally on your iPad's CPU/GPU via WebAssembly and WebGPU/WebGL2.
+* **No Cloud Uploads or Telemetry:** Your documents and images never leave your device.
+
+---
+
+## Credits & License
+
+* Core applications (`PhotoCraft`, `WordCraft`, `PdfCraft`) and official icons are created and maintained by **[storytold](https://github.com/storytold)** ([ArtCraft Suite](https://getartcraft.com/)).
+* Upstream engines and this iPadOS adaptation are dual-licensed under the **MIT** or **Apache-2.0** licenses.
