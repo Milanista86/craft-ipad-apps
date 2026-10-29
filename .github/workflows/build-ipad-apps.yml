@@ -1,18 +1,15 @@
-name: Build iPadOS Apps (.ipa)
+name: Build Complete 13-App iPadOS .ipa Suite
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+    paths:
+      - 'ios-wrapper/**'
+      - '.github/workflows/build-ipad-apps.yml'
   workflow_dispatch:
-    inputs:
-      build_mode:
-        description: "Try pre-built Web release first (fast) or compile Rust from source"
-        required: false
-        default: "auto"
-        type: choice
-        options:
-          - auto
-          - source
+
+permissions:
+  contents: write
 
 jobs:
   build-ipa:
@@ -22,33 +19,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - id: photocraft
-            repo: storytold/photocraft
-            app_name: PhotoCraft
-            bundle_id: com.craftsuite.photocraft
-            bg_hex: "001E36"
-            fg_hex: "31A8FF"
-            label: "Ps"
-          - id: wordcraft
-            repo: storytold/wordcraft
-            app_name: WordCraft
-            bundle_id: com.craftsuite.wordcraft
-            bg_hex: "103F91"
-            fg_hex: "41A5EE"
-            label: "W"
-          - id: pdfcraft
-            repo: storytold/pdfcraft
-            app_name: PdfCraft
-            bundle_id: com.craftsuite.pdfcraft
-            bg_hex: "3B0604"
-            fg_hex: "FF3B30"
-            label: "PDF"
+          - { id: photocraft,  app_name: PhotoCraft,  bundle_id: com.craftsuite.photocraft }
+          - { id: vectorcraft, app_name: VectorCraft, bundle_id: com.craftsuite.vectorcraft }
+          - { id: designcraft, app_name: DesignCraft, bundle_id: com.craftsuite.designcraft }
+          - { id: lightcraft,  app_name: LightCraft,  bundle_id: com.craftsuite.lightcraft }
+          - { id: filmcraft,   app_name: FilmCraft,   bundle_id: com.craftsuite.filmcraft }
+          - { id: effectcraft, app_name: EffectCraft, bundle_id: com.craftsuite.effectcraft }
+          - { id: figcraft,    app_name: FigCraft,    bundle_id: com.craftsuite.figcraft }
+          - { id: wordcraft,   app_name: WordCraft,   bundle_id: com.craftsuite.wordcraft }
+          - { id: gridcraft,   app_name: GridCraft,   bundle_id: com.craftsuite.gridcraft }
+          - { id: deckcraft,   app_name: DeckCraft,   bundle_id: com.craftsuite.deckcraft }
+          - { id: pdfcraft,    app_name: PdfCraft,    bundle_id: com.craftsuite.pdfcraft }
+          - { id: soundcraft,  app_name: SoundCraft,  bundle_id: com.craftsuite.soundcraft }
+          - { id: cadcraft,    app_name: CADCraft,    bundle_id: com.craftsuite.cadcraft }
 
     steps:
-      - name: Checkout iPad Wrapper Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fetch or Compile WebAssembly Bundle (${{ matrix.app_name }})
+      - name: Fetch WebAssembly Bundle (storytold/${{ matrix.id }})
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -56,130 +45,49 @@ jobs:
           rm -rf ios-wrapper/www
           mkdir -p ios-wrapper/www
 
-          DOWNLOADED=0
-          if [ "${{ inputs.build_mode }}" != "source" ]; then
-            echo "Checking latest GitHub release of ${{ matrix.repo }} for pre-built web zip..."
-            ASSET_NAME=$(gh release view --repo "${{ matrix.repo }}" --json assets --jq '.assets[].name' 2>/dev/null | grep -iE 'web.*\.zip$' | head -n 1 || true)
-            if [ -n "$ASSET_NAME" ]; then
-              echo "Found pre-built web asset: $ASSET_NAME"
-              gh release download --repo "${{ matrix.repo }}" --pattern "$ASSET_NAME" --dir /tmp/web-release
-              mkdir -p /tmp/web-extracted
-              unzip -q "/tmp/web-release/$ASSET_NAME" -d /tmp/web-extracted
-              INDEX_FILE=$(find /tmp/web-extracted -name "index.html" | head -n 1)
-              if [ -n "$INDEX_FILE" ]; then
-                BUNDLE_DIR=$(dirname "$INDEX_FILE")
-                cp -R "$BUNDLE_DIR"/. ios-wrapper/www/
-                DOWNLOADED=1
-                echo "Successfully unpacked pre-built web bundle into ios-wrapper/www"
-              fi
-            fi
+          REPO="storytold/${{ matrix.id }}"
+          ASSET_NAME=$(gh release view --repo "$REPO" --json assets --jq '.assets[].name' | grep -iE 'web.*\.zip$' | head -n 1)
+          echo "Downloading $ASSET_NAME from $REPO..."
+          gh release download --repo "$REPO" --pattern "$ASSET_NAME" --dir /tmp/web-release
+          mkdir -p /tmp/web-extracted
+          unzip -q "/tmp/web-release/$ASSET_NAME" -d /tmp/web-extracted
+          INDEX_FILE=$(find /tmp/web-extracted -name "index.html" | head -n 1)
+          BUNDLE_DIR=$(dirname "$INDEX_FILE")
+          cp -R "$BUNDLE_DIR"/. ios-wrapper/www/
+
+          if [ -d "ios-wrapper/www/app" ] && [ -d "ios-wrapper/www/snippets" ]; then
+            cp -R ios-wrapper/www/snippets ios-wrapper/www/app/snippets
           fi
 
-          if [ "$DOWNLOADED" -eq 0 ]; then
-            echo "Building ${{ matrix.repo }} from Rust source to WebAssembly..."
-            rustup target add wasm32-unknown-unknown
-            if ! command -v trunk >/dev/null 2>&1; then
-              curl -LsSf https://github.com/trunk-rs/trunk/releases/latest/download/trunk-aarch64-apple-darwin.tar.gz | tar -xzf - -C "$HOME/.cargo/bin"
-            fi
-
-            git clone --depth 1 "https://github.com/${{ matrix.repo }}.git" /tmp/craft-src
-            cd /tmp/craft-src
-
-            if [ -f "apps/${{ matrix.id }}-web/index.html" ]; then
-              WEB_DIR="apps/${{ matrix.id }}-web"
-            else
-              INDEX_PATH=$(find . -maxdepth 4 -name "index.html" -exec grep -l "data-trunk" {} + | head -n 1)
-              if [ -z "$INDEX_PATH" ]; then
-                INDEX_PATH=$(find . -maxdepth 4 -name "index.html" | head -n 1)
-              fi
-              WEB_DIR=$(dirname "$INDEX_PATH")
-            fi
-
-            echo "Running trunk build --release --public-url ./ in $WEB_DIR..."
-            cd "$WEB_DIR"
-            trunk build --release --public-url ./
-            cp -R dist/. "$GITHUB_WORKSPACE/ios-wrapper/www/"
-          fi
-
-          echo "Verifying ios-wrapper/www contents:"
-          ls -la "$GITHUB_WORKSPACE/ios-wrapper/www"
-          test -f "$GITHUB_WORKSPACE/ios-wrapper/www/index.html"
-
-      - name: Generate App Icon for ${{ matrix.app_name }}
+      - name: Format Official 1024x1024 App Icon for ${{ matrix.app_name }}
         run: |
           ICON_SET="ios-wrapper/Sources/Assets.xcassets/AppIcon.appiconset"
           mkdir -p "$ICON_SET"
+          curl -LsSf "https://raw.githubusercontent.com/storytold/${{ matrix.id }}/main/assets/app-icon/${{ matrix.id }}-1024.png" -o /tmp/raw-icon.png
 
-          cat > /tmp/make_icon.swift << 'EOF'
-          import AppKit
-
-          let args = CommandLine.arguments
-          let bgHex = args[1]
-          let fgHex = args[2]
-          let label = args[3]
-          let outPath = args[4]
-
-          func color(from hex: String) -> NSColor {
-              let v = Int(hex, radix: 16) ?? 0
-              let r = CGFloat((v >> 16) & 0xFF) / 255.0
-              let g = CGFloat((v >> 8) & 0xFF) / 255.0
-              let b = CGFloat(v & 0xFF) / 255.0
-              return NSColor(srgbRed: r, green: g, blue: b, alpha: 1.0)
-          }
-
-          let size = NSSize(width: 1024, height: 1024)
-          let rep = NSBitmapImageRep(
-              bitmapDataPlanes: nil,
-              pixelsWide: 1024,
-              pixelsHigh: 1024,
-              bitsPerSample: 8,
-              samplesPerPixel: 4,
-              hasAlpha: true,
-              isPlanar: false,
-              colorSpaceName: .deviceRGB,
-              bytesPerRow: 0,
-              bitsPerPixel: 0
-          )!
-
-          NSGraphicsContext.saveGraphicsState()
-          NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-
-          color(from: bgHex).setFill()
-          NSBezierPath(rect: NSRect(origin: .zero, size: size)).fill()
-
-          let insetRect = NSRect(x: 64, y: 64, width: 896, height: 896)
-          let borderPath = NSBezierPath(roundedRect: insetRect, xRadius: 180, yRadius: 180)
-          borderPath.lineWidth = 36
-          color(from: fgHex).setStroke()
-          borderPath.stroke()
-
-          let fontSize: CGFloat = label.count > 2 ? 330 : 460
-          let paragraph = NSMutableParagraphStyle()
-          paragraph.alignment = .center
-
-          let attrs: [NSAttributedString.Key: Any] = [
-              .font: NSFont.systemFont(ofSize: fontSize, weight: .bold),
-              .foregroundColor: color(from: fgHex),
-              .paragraphStyle: paragraph
-          ]
-
-          let attrStr = NSAttributedString(string: label, attributes: attrs)
-          let strSize = attrStr.size()
-          let drawRect = NSRect(
-              x: 0,
-              y: (1024 - strSize.height) / 2.0,
-              width: 1024,
-              height: strSize.height
-          )
-          attrStr.draw(in: drawRect)
-
-          NSGraphicsContext.restoreGraphicsState()
-
-          let pngData = rep.representation(using: .png, properties: [:])!
-          try! pngData.write(to: URL(fileURLWithPath: outPath))
-          EOF
-
-          swift /tmp/make_icon.swift "${{ matrix.bg_hex }}" "${{ matrix.fg_hex }}" "${{ matrix.label }}" "$ICON_SET/AppIcon.png"
+          pip3 install --quiet Pillow
+          python3 - << 'PYEOF'
+          from PIL import Image
+          img = Image.open("/tmp/raw-icon.png").convert("RGBA")
+          w, h = img.size
+          px = img.load()
+          min_x, min_y, max_x, max_y = w, h, 0, 0
+          for y in range(0, h, 2):
+              for x in range(0, w, 2):
+                  if px[x, y][3] > 200:
+                      if x < min_x: min_x = x
+                      if y < min_y: min_y = y
+                      if x > max_x: max_x = x
+                      if y > max_y: max_y = y
+          if max_x <= min_x or max_y <= min_y:
+              min_x, min_y, max_x, max_y = 0, 0, w - 1, h - 1
+          sample = px[w // 2, min(h - 1, min_y + 25)]
+          bg_rgb = (sample[0], sample[1], sample[2]) if sample[3] > 200 else (30, 41, 59)
+          cropped = img.crop((min_x, min_y, max_x + 1, max_y + 1)).resize((1024, 1024), Image.Resampling.LANCZOS)
+          bg = Image.new("RGBA", (1024, 1024), (*bg_rgb, 255))
+          bg.alpha_composite(cropped)
+          bg.convert("RGB").save("ios-wrapper/Sources/Assets.xcassets/AppIcon.appiconset/AppIcon.png", "PNG")
+          PYEOF
 
           cat > "$ICON_SET/Contents.json" << 'EOF'
           {
@@ -224,7 +132,16 @@ jobs:
           cp -R "build/Build/Products/Release-iphoneos/${{ matrix.app_name }}.app" Payload/
           zip -r -y "$GITHUB_WORKSPACE/${{ matrix.app_name }}-iPad.ipa" Payload
 
-      - name: Upload ${{ matrix.app_name }}-iPad.ipa Artifact
+      - name: Upload ${{ matrix.app_name }}-iPad.ipa to GitHub Release v1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view v1.0.0 >/dev/null 2>&1; then
+            gh release create v1.0.0 --title "ArtCraft Suite for iPadOS (All 13 Apps)" --notes "Complete 13-app iPadOS .ipa suite and live Web App Hub." || true
+          fi
+          gh release upload v1.0.0 "${{ matrix.app_name }}-iPad.ipa" --clobber
+
+      - name: Upload ${{ matrix.app_name }}-iPad.ipa Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.app_name }}-iPad-IPA

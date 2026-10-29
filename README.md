@@ -1,71 +1,77 @@
-# ArtCraft Suite for iPadOS
+# ArtCraft Suite for iPadOS — Complete 13-App Edition
 
 <p align="center">
-  <img src="https://milanista86.github.io/craft-ipad-apps/photocraft/icon.png" width="88" alt="PhotoCraft Icon" style="border-radius: 20px; margin: 0 10px;" />
-  <img src="https://milanista86.github.io/craft-ipad-apps/wordcraft/icon.png" width="88" alt="WordCraft Icon" style="border-radius: 20px; margin: 0 10px;" />
-  <img src="https://milanista86.github.io/craft-ipad-apps/pdfcraft/icon.png" width="88" alt="PdfCraft Icon" style="border-radius: 20px; margin: 0 10px;" />
+  <a href="https://milanista86.github.io/craft-ipad-apps/photocraft/"><img src="https://milanista86.github.io/craft-ipad-apps/photocraft/icon.png" width="64" alt="PhotoCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/vectorcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/vectorcraft/icon.png" width="64" alt="VectorCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/designcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/designcraft/icon.png" width="64" alt="DesignCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/lightcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/lightcraft/icon.png" width="64" alt="LightCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/filmcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/filmcraft/icon.png" width="64" alt="FilmCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/effectcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/effectcraft/icon.png" width="64" alt="EffectCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/figcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/figcraft/icon.png" width="64" alt="FigCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <br>
+  <a href="https://milanista86.github.io/craft-ipad-apps/wordcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/wordcraft/icon.png" width="64" alt="WordCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/gridcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/gridcraft/icon.png" width="64" alt="GridCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/deckcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/deckcraft/icon.png" width="64" alt="DeckCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/pdfcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/pdfcraft/icon.png" width="64" alt="PdfCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/soundcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/soundcraft/icon.png" width="64" alt="SoundCraft" style="border-radius: 14px; margin: 4px;" /></a>
+  <a href="https://milanista86.github.io/craft-ipad-apps/cadcraft/"><img src="https://milanista86.github.io/craft-ipad-apps/cadcraft/icon.png" width="64" alt="CADCraft" style="border-radius: 14px; margin: 4px;" /></a>
 </p>
 
 <p align="center">
-  <strong>Universal iPadOS Adaptation &amp; Cloud Builder for the <a href="https://github.com/storytold">ArtCraft (@storytold)</a> Application Ecosystem</strong><br>
-  Run the full desktop Rust + WebGPU/WebGL2 creative and productivity apps natively on any modern iPad.
+  <strong>All 13 Desktop Creative, Office, Audio &amp; CAD Applications from <a href="https://github.com/storytold">ArtCraft (@storytold)</a> — Adapted for iPadOS</strong><br>
+  Run the complete pure-Rust desktop suite natively on any modern iPad (iPad, iPad Air, iPad mini, and iPad Pro).
 </p>
 
 <p align="center">
-  <a href="https://milanista86.github.io/craft-ipad-apps/"><strong>🚀 Open Live iPad App Hub</strong></a> ·
-  <a href="https://github.com/Milanista86/craft-ipad-apps/releases"><strong>📦 Download .ipa Releases</strong></a> ·
+  <a href="https://milanista86.github.io/craft-ipad-apps/"><strong>🚀 Launch Complete 13-App iPad Hub</strong></a> ·
+  <a href="https://github.com/Milanista86/craft-ipad-apps/releases"><strong>📦 Download All 13 .ipa Releases</strong></a> ·
   <a href="https://github.com/storytold"><strong>✨ Original ArtCraft Repositories (@storytold)</strong></a>
 </p>
 
 ---
 
-## About This Project
+## Overview
 
-The **[ArtCraft Suite](https://github.com/storytold)** (created by `@storytold`) is an acclaimed open-source family of clean-room desktop creative and office applications written from scratch in pure Rust (`egui` + `eframe` + `wgpu`). While the official repositories provide native builds for Windows, macOS, Linux, and FreeBSD alongside web bundles, running the full desktop interfaces directly on **iPadOS** faces several hurdles out of the box—such as the iPadOS Status Bar covering the top menu bar, lack of touch right-click and virtual keyboard triggers, and no native `.ipa` wrapper.
+The **[ArtCraft Suite](https://github.com/storytold)** (by `@storytold`) is an acclaimed open-source family of 13 clean-room desktop creative, productivity, audio, and CAD applications written from scratch in pure Rust (`egui` + `eframe` + `wgpu`). While upstream releases target Windows, macOS, Linux, FreeBSD, and desktop browsers, running the desktop builds directly on **iPadOS** faces mobile viewport limitations, iPadOS Status Bar menu-bar overlap, lack of touch right-click and virtual keyboard triggers, and no native `.ipa` wrapper.
 
-**ArtCraft Suite for iPadOS** provides a universal, reusable adaptation layer and automated GitHub Actions pipeline that makes **any application from the [ArtCraft (@storytold)](https://github.com/storytold) organization** work seamlessly as a full-screen desktop application on **any modern iPad** (iPad, iPad Air, iPad mini, and iPad Pro across Apple M-series and A-series chips).
+**ArtCraft Suite for iPadOS** adapts and packages **all 13 applications in the ArtCraft ecosystem** so they run seamlessly on **any modern iPad** (Apple M-series and A-series iPads running iPadOS 15+)—both as **zero-PC fullscreen iPad Home Screen apps** and as **native sideloadable `.ipa` bundles**.
 
 ---
 
-## Currently Hosted Apps (Live Now)
+## Complete 13-App Lineup
 
-While this architecture supports the **entire ArtCraft ecosystem**, this repository currently builds, hosts, and auto-updates three core applications out of the box:
+### 🎨 Creative & Design Suite (7 Apps)
 
-| Application | Original Upstream Repo | Desktop Equivalent | Live iPad Web App | Native `.ipa` |
+| Application | Upstream Repository | Desktop Equivalent | Live iPad Web App | Native `.ipa` |
 | :--- | :--- | :--- | :--- | :--- |
-| **PhotoCraft** | [`storytold/photocraft`](https://github.com/storytold/photocraft) | Layered Photo & `.psd` Editor | [**Launch PhotoCraft**](https://milanista86.github.io/craft-ipad-apps/photocraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/PhotoCraft-iPad.ipa) |
-| **WordCraft** | [`storytold/wordcraft`](https://github.com/storytold/wordcraft) | Word Processor (`.docx`, `.odt`, `.rtf`) | [**Launch WordCraft**](https://milanista86.github.io/craft-ipad-apps/wordcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/WordCraft-iPad.ipa) |
-| **PdfCraft** | [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) | PDF Reader, Organizer & Editor | [**Launch PdfCraft**](https://milanista86.github.io/craft-ipad-apps/pdfcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/PdfCraft-iPad.ipa) |
+| **PhotoCraft** | [`storytold/photocraft`](https://github.com/storytold/photocraft) | Adobe Photoshop Alternative (`.psd` / Raster) | [**Launch PhotoCraft**](https://milanista86.github.io/craft-ipad-apps/photocraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/PhotoCraft-iPad.ipa) |
+| **VectorCraft** | [`storytold/vectorcraft`](https://github.com/storytold/vectorcraft) | Adobe Illustrator Alternative (Vector / `.svg`) | [**Launch VectorCraft**](https://milanista86.github.io/craft-ipad-apps/vectorcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/VectorCraft-iPad.ipa) |
+| **DesignCraft** | [`storytold/designcraft`](https://github.com/storytold/designcraft) | Adobe InDesign Alternative (Page Layout) | [**Launch DesignCraft**](https://milanista86.github.io/craft-ipad-apps/designcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/DesignCraft-iPad.ipa) |
+| **LightCraft** | [`storytold/lightcraft`](https://github.com/storytold/lightcraft) | Adobe Lightroom Alternative (RAW & Catalog) | [**Launch LightCraft**](https://milanista86.github.io/craft-ipad-apps/lightcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/LightCraft-iPad.ipa) |
+| **FilmCraft** | [`storytold/filmcraft`](https://github.com/storytold/filmcraft) | Adobe Premiere Pro Alternative (Video NLE) | [**Launch FilmCraft**](https://milanista86.github.io/craft-ipad-apps/filmcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/FilmCraft-iPad.ipa) |
+| **EffectCraft** | [`storytold/effectcraft`](https://github.com/storytold/effectcraft) | Adobe After Effects Alternative (VFX / Motion) | [**Launch EffectCraft**](https://milanista86.github.io/craft-ipad-apps/effectcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/EffectCraft-iPad.ipa) |
+| **FigCraft** | [`storytold/figcraft`](https://github.com/storytold/figcraft) | Figma Alternative (UI/UX & Prototyping) | [**Launch FigCraft**](https://milanista86.github.io/craft-ipad-apps/figcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/FigCraft-iPad.ipa) |
+
+### 📄 Office, Audio & Engineering Suite (6 Apps)
+
+| Application | Upstream Repository | Desktop Equivalent | Live iPad Web App | Native `.ipa` |
+| :--- | :--- | :--- | :--- | :--- |
+| **WordCraft** | [`storytold/wordcraft`](https://github.com/storytold/wordcraft) | Microsoft Word Alternative (`.docx`, `.odt`, `.rtf`) | [**Launch WordCraft**](https://milanista86.github.io/craft-ipad-apps/wordcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/WordCraft-iPad.ipa) |
+| **GridCraft** | [`storytold/gridcraft`](https://github.com/storytold/gridcraft) | Microsoft Excel Alternative (`.xlsx`, `.csv`) | [**Launch GridCraft**](https://milanista86.github.io/craft-ipad-apps/gridcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/GridCraft-iPad.ipa) |
+| **DeckCraft** | [`storytold/deckcraft`](https://github.com/storytold/deckcraft) | Microsoft PowerPoint Alternative (`.pptx`) | [**Launch DeckCraft**](https://milanista86.github.io/craft-ipad-apps/deckcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/DeckCraft-iPad.ipa) |
+| **PdfCraft** | [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) | Adobe Acrobat Pro Alternative (PDF Workbench) | [**Launch PdfCraft**](https://milanista86.github.io/craft-ipad-apps/pdfcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/PdfCraft-iPad.ipa) |
+| **SoundCraft** | [`storytold/soundcraft`](https://github.com/storytold/soundcraft) | Avid Pro Tools Alternative (Multitrack DAW) | [**Launch SoundCraft**](https://milanista86.github.io/craft-ipad-apps/soundcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/SoundCraft-iPad.ipa) |
+| **CADCraft** | [`storytold/cadcraft`](https://github.com/storytold/cadcraft) | AutoCAD Alternative (2D/3D CAD & `.dxf`) | [**Launch CADCraft**](https://milanista86.github.io/craft-ipad-apps/cadcraft/) | [Download `.ipa`](https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/CADCraft-iPad.ipa) |
 
 ---
 
-## Compatible With the Entire ArtCraft Ecosystem
+## Key iPadOS Enhancements
 
-Because every application in the **[storytold](https://github.com/storytold)** organization shares the same `egui` / `eframe` + `wgpu` + WebAssembly architecture, **this exact wrapper and cloud pipeline works with all ArtCraft apps**, including:
-
-* 🎨 **[VectorCraft](https://github.com/storytold/vectorcraft)** — Vector illustration workbench
-* 📊 **[GridCraft](https://github.com/storytold/gridcraft)** — Spreadsheet & data engine
-* 📽️ **[DeckCraft](https://github.com/storytold/deckcraft)** — Presentation & slide studio
-* 🎬 **[FilmCraft](https://github.com/storytold/filmcraft)** — Non-linear video editing
-* 📸 **[LightCraft](https://github.com/storytold/lightcraft)** — RAW photo development & catalog
-* 📐 **[DesignCraft](https://github.com/storytold/designcraft)** — Multi-page desktop publishing & layout
-* ✨ **[EffectCraft](https://github.com/storytold/effectcraft)** — Motion graphics & compositing
-* 🔊 **[SoundCraft](https://github.com/storytold/soundcraft)** — Digital audio workstation & editing
-
-### How to Add Any Other ArtCraft App
-To add another app from `github.com/storytold` to your iPad hub:
-1. Add its repository name (e.g., `vectorcraft`, `gridcraft`, `deckcraft`) to the matrix in [`.github/workflows/build-ipad-apps.yml`](.github/workflows/build-ipad-apps.yml) and the loop in [`.github/workflows/auto-update-cloud.yml`](.github/workflows/auto-update-cloud.yml).
-2. Trigger the workflow under the **Actions** tab—GitHub Actions will automatically package the WebAssembly engine, official icon, and iPadOS bridge for you.
-
----
-
-## What This iPadOS Adaptation Adds
-
-1. **iPadOS Status Bar Safe-Area Offset:** Pushes the application viewport below the iPadOS Status Bar and multitasking window handle (`--ipad-status-offset: max(env(safe-area-inset-top, 0px), 26px)`) so top menu bars (`File`, `Edit`, `Image`, `Layer`, `View`, `Help`) are never blocked and remain 100% clickable.
-2. **Floating Touch & Apple Pencil Helper (`⚙️`):** Adds a sleek, collapsible floating pill in the bottom-right corner with:
-   * **`Right-Click`:** Tap to arm right-click mode, then touch anywhere on the canvas with your finger or Apple Pencil to open desktop context menus when no mouse/trackpad is connected.
+1. **iPadOS Status Bar Safe-Area Offset:** Automatically shifts the application canvas below the iPadOS Status Bar and multitasking window bar (`--ipad-status-offset: max(env(safe-area-inset-top, 0px), 26px)`) so top menu bars (`File`, `Edit`, `Image`, `Layer`, `View`, `Help`) are never covered and remain 100% accessible.
+2. **Floating Touch & Apple Pencil Helper (`⚙️`):** Adds a collapsible corner pill with:
+   * **`Right-Click`:** Tap to arm right-click mode, then touch anywhere on the canvas with your finger or Apple Pencil to open desktop context menus when using the iPad without a mouse or trackpad.
    * **`⌨️` (Keyboard):** Summon the native iPadOS on-screen keyboard on demand.
-   * **`🔄` (Reload):** One-tap refresh to pull the latest upstream version directly inside the fullscreen Home Screen app.
+   * **`🔄` (Reload):** One-tap refresh to fetch the latest upstream release directly inside the fullscreen Home Screen app.
 3. **Native iPadOS Files Integration:** Opening and saving/exporting files connects directly to the native **iPadOS Files** app (`On My iPad`, `iCloud Drive`, and external USB-C storage).
 4. **Official Full-Bleed App Icons:** Automatically formats `storytold`'s official `1024x1024` app icons edge-to-edge for iPadOS Home Screen squircle masking.
 
@@ -75,24 +81,26 @@ To add another app from `github.com/storytold` to your iPad hub:
 
 ### Method 1: Instant Cloud Install via Safari (Recommended — No PC Required)
 1. Open **[https://milanista86.github.io/craft-ipad-apps/](https://milanista86.github.io/craft-ipad-apps/)** in **Safari** on your iPad.
-2. Tap **Open PhotoCraft**, **Open WordCraft**, or **Open PdfCraft** and wait a couple of seconds for the app to load.
+2. Tap **Launch** on any of the 13 applications and wait a couple of seconds for it to load.
 3. Tap the **Share** button in Safari (the square with an arrow pointing up) and select **Add to Home Screen**.
-4. Tap **Add**. The app is now installed on your iPad Home Screen with its official icon and runs **100% fullscreen** without Safari bars.
+4. Tap **Add**. Each app installs onto your iPad Home Screen with its official icon and runs **100% fullscreen** without browser bars.
 
-### Method 2: Native `.ipa` Sideloading (Apple Developer Account)
-If you prefer installing the native Swift + `WKWebView` + `NWListener` `.ipa` packages (`PhotoCraft-iPad.ipa`, `WordCraft-iPad.ipa`, `PdfCraft-iPad.ipa`):
-1. Download the `.ipa` files from the [**Releases**](https://github.com/Milanista86/craft-ipad-apps/releases) page.
+### Method 2: Sideloading the Native `.ipa` Packages
+If you prefer installing the standalone native Swift + `WKWebView` + `NWListener` `.ipa` packages using an Apple Developer account:
+1. Download any of the 13 `.ipa` files from the [**Releases**](https://github.com/Milanista86/craft-ipad-apps/releases) page.
 2. Sign and install them onto your iPad using [Sideloadly](https://sideloadly.io/), AltStore, Feather, or Xcode.
+3. Each app has its own unique Bundle Identifier (`com.craftsuite.<app>`) so all 13 can be installed side-by-side.
 
 ---
 
-## Automatic Upstream Updates
+## Automated Cloud Builder & Weekly Updater
 
-An automated GitHub Actions workflow ([`.github/workflows/auto-update-cloud.yml`](.github/workflows/auto-update-cloud.yml)) runs weekly (and on manual 1-click trigger from the **Actions** tab) to fetch the newest releases from [`github.com/storytold`](https://github.com/storytold), apply the iPadOS layout and touch patches, and publish them directly to GitHub Pages.
+* **[`.github/workflows/auto-update-cloud.yml`](.github/workflows/auto-update-cloud.yml)** runs [`scripts/build_cloud_hub.py`](scripts/build_cloud_hub.py) every week (and on manual trigger) to pull the latest releases of all 13 apps from [`github.com/storytold`](https://github.com/storytold), apply the iPadOS adaptations, and deploy them to GitHub Pages.
+* **[`.github/workflows/build-ipad-apps.yml`](.github/workflows/build-ipad-apps.yml)** builds all 13 native `.ipa` bundles on GitHub's cloud macOS Xcode runners and attaches them to the repository's Releases page.
 
 ---
 
 ## Credits & License
 
-* All core applications (`PhotoCraft`, `WordCraft`, `PdfCraft`, and sibling Craft apps) and official artwork are created by **[storytold (ArtCraft)](https://github.com/storytold)**.
-* Licensed under **MIT** / **Apache-2.0**, matching the upstream repositories.
+* All 13 core applications and official icons are created and maintained by **[storytold (ArtCraft Suite)](https://github.com/storytold)**.
+* Dual-licensed under the **MIT** or **Apache-2.0** licenses.
