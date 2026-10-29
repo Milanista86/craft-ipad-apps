@@ -1,0 +1,74 @@
+name: Auto-Update Cloud iPad Apps (GitHub Pages)
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-cloud-pages:
+    name: Fetch Latest Releases & Update iPad Cloud Apps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Update PhotoCraft, WordCraft, and PdfCraft from Official Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          for app in photocraft wordcraft pdfcraft; do
+            echo "Checking latest release for storytold/$app..."
+            ASSET=$(gh release view --repo "storytold/$app" --json assets --jq '.assets[].name' | grep -iE 'web.*\.zip$' | head -n 1 || true)
+            if [ -z "$ASSET" ]; then
+              echo "No web zip found for $app, keeping existing version."
+              continue
+            fi
+
+            rm -rf "/tmp/$app-dl" "/tmp/$app-ext"
+            mkdir -p "/tmp/$app-dl" "/tmp/$app-ext"
+            gh release download --repo "storytold/$app" --pattern "$ASSET" --dir "/tmp/$app-dl"
+            unzip -q "/tmp/$app-dl/$ASSET" -d "/tmp/$app-ext"
+
+            INDEX_FILE=$(find "/tmp/$app-ext" -name "index.html" | head -n 1)
+            BUNDLE_DIR=$(dirname "$INDEX_FILE")
+
+            # Preserve existing icons, manifest, and patched index.html if needed
+            cp "$app/icon.png" "/tmp/$app-icon.png"
+            cp "$app/apple-touch-icon.png" "/tmp/$app-touch.png"
+            cp "$app/manifest.json" "/tmp/$app-manifest.json"
+
+            rm -rf "$app"/*
+            cp -R "$BUNDLE_DIR"/. "$app/"
+            rm -f "$app/.htaccess" "$app/_headers" "$app/HOSTING.md" "$app/README.md" "$app/ATTRIBUTION.md" "$app"/LICENSE* "$app/NOTICE" "$app"/*.ico
+
+            if [ "$app" = "photocraft" ] && [ -d "$app/app" ]; then
+              PART=$(ls "$app"/app/*.part-aa | head -n 1)
+              gzip -dc "$PART" > "$app/photocraft-web_bg.wasm"
+              cp "$app/app/photocraft-web.js" "$app/photocraft-web.js"
+              rm -rf "$app/app" "$app"/photocraft-web-boot*
+            fi
+
+            cp "/tmp/$app-icon.png" "$app/icon.png"
+            cp "/tmp/$app-touch.png" "$app/apple-touch-icon.png"
+            cp "/tmp/$app-touch.png" "$app/apple-touch-icon-precomposed.png"
+            cp "/tmp/$app-manifest.json" "$app/manifest.json"
+          done
+
+      - name: Commit & Push Updated Cloud Apps if Changed
+        run: |
+          git config user.name "Craft iPad Auto-Updater"
+          git config user.email "updater@local"
+          git add .
+          if git diff --staged --quiet; then
+            echo "All apps are already on the latest version."
+          else
+            git commit -m "Auto-update Craft iPad Cloud Apps to latest storytold releases"
+            git push origin gh-pages
+          fi
