@@ -58,6 +58,7 @@ jobs:
           if [ -d "ios-wrapper/www/app" ] && [ -d "ios-wrapper/www/snippets" ]; then
             cp -R ios-wrapper/www/snippets ios-wrapper/www/app/snippets
           fi
+          rm -f ios-wrapper/www/.htaccess
 
       - name: Format Official 1024x1024 App Icon for ${{ matrix.app_name }}
         run: |
@@ -65,7 +66,7 @@ jobs:
           mkdir -p "$ICON_SET"
           curl -LsSf "https://raw.githubusercontent.com/storytold/${{ matrix.id }}/main/assets/app-icon/${{ matrix.id }}-1024.png" -o /tmp/raw-icon.png
 
-          pip3 install --quiet Pillow
+          pip3 install --quiet --break-system-packages Pillow
           python3 - << 'PYEOF'
           from PIL import Image
           img = Image.open("/tmp/raw-icon.png").convert("RGBA")
