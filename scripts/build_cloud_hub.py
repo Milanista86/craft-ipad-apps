@@ -142,7 +142,7 @@ TOUCH_HELPER_SCRIPT = """<script>
     const style = document.createElement("style");
     style.textContent = `
       :root {
-        --ipad-status-offset: max(env(safe-area-inset-top, 0px), 26px);
+        --ipad-status-offset: 18px;
       }
       html, body {
         margin: 0 !important;
@@ -226,7 +226,7 @@ TOUCH_HELPER_SCRIPT = """<script>
     });
     reloadBtn.addEventListener("pointerdown", function(e) {
       e.stopPropagation();
-      window.location.reload();
+      window.location.replace(window.location.pathname + "?v=" + Date.now());
     });
     window.addEventListener("pointerdown", function(e) {
       if (!rightClickArmed || bar.contains(e.target)) return;
