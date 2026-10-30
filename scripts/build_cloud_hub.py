@@ -139,10 +139,15 @@ TOUCH_HELPER_SCRIPT = """<script>
     }
   }
   window.addEventListener("DOMContentLoaded", function() {
+    const isNativeIpa = Boolean(
+      (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.craftSaveFile) ||
+      window.location.search.indexOf("ipa=1") !== -1
+    );
+    const statusOffset = isNativeIpa ? "0px" : "18px";
     const style = document.createElement("style");
     style.textContent = `
       :root {
-        --ipad-status-offset: 18px;
+        --ipad-status-offset: ${statusOffset};
       }
       html, body {
         margin: 0 !important;

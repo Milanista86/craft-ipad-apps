@@ -16,9 +16,15 @@ final class CraftWebViewController: UIViewController, WKScriptMessageHandler, WK
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(red: 0.12, green: 0.12, blue: 0.14, alpha: 1.0)
+        view.backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
         setupWebView()
         startLocalServerAndLoad()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        setNeedsStatusBarAppearanceUpdate()
+        setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
     }
 
     private func setupWebView() {
@@ -260,6 +266,7 @@ final class CraftWebViewController: UIViewController, WKScriptMessageHandler, WK
             `;
             document.head.appendChild(style);
 
+            if (document.getElementById("craft-ipad-helper")) return;
             let rightClickArmed = false;
             const bar = document.createElement("div");
             bar.id = "craft-ipad-helper";
@@ -267,12 +274,14 @@ final class CraftWebViewController: UIViewController, WKScriptMessageHandler, WK
             bar.innerHTML = `
                 <button id="craft-rc-btn" class="helper-btn" title="Tap then touch canvas to Right-Click">Right-Click</button>
                 <button id="craft-kb-btn" class="helper-btn" title="Toggle iPad On-Screen Keyboard">⌨️</button>
+                <button id="craft-reload-btn" class="helper-btn" title="Fetch Latest Cloud Update">🔄</button>
                 <button id="craft-toggle-btn" title="Show/Hide iPad Touch Tools">⚙️</button>
             `;
             document.body.appendChild(bar);
 
             const rcBtn = document.getElementById("craft-rc-btn");
             const kbBtn = document.getElementById("craft-kb-btn");
+            const reloadBtn = document.getElementById("craft-reload-btn");
             const toggleBtn = document.getElementById("craft-toggle-btn");
 
             toggleBtn.addEventListener("pointerdown", function(e) {
@@ -280,10 +289,11 @@ final class CraftWebViewController: UIViewController, WKScriptMessageHandler, WK
                 bar.classList.toggle("collapsed");
             });
 
+            let isRightClickArmed = false;
             rcBtn.addEventListener("pointerdown", function(e) {
                 e.stopPropagation();
-                rightClickArmed = !rightClickArmed;
-                rcBtn.classList.toggle("active", rightClickArmed);
+                isRightClickArmed = !isRightClickArmed;
+                rcBtn.classList.toggle("active", isRightClickArmed);
             });
 
             kbBtn.addEventListener("pointerdown", function(e) {
@@ -298,11 +308,21 @@ final class CraftWebViewController: UIViewController, WKScriptMessageHandler, WK
                 input.focus();
             });
 
+            reloadBtn.addEventListener("pointerdown", function(e) {
+                e.stopPropagation();
+                const title = (document.title || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+                if (navigator.onLine && title) {
+                    window.location.replace("https://milanista86.github.io/craft-ipad-apps/" + title + "/?ipa=1&v=" + Date.now());
+                } else {
+                    window.location.reload();
+                }
+            });
+
             // Convert armed tap on canvas into a desktop right-click (button 2)
             window.addEventListener("pointerdown", function(e) {
-                if (!rightClickArmed) return;
+                if (!isRightClickArmed) return;
                 if (bar.contains(e.target)) return;
-                rightClickArmed = false;
+                isRightClickArmed = false;
                 rcBtn.classList.remove("active");
                 e.stopImmediatePropagation();
                 e.preventDefault();
