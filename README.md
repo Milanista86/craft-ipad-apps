@@ -67,13 +67,22 @@ The **[ArtCraft Suite](https://github.com/storytold)** (by `@storytold`) is an a
 
 ## Key iPadOS Enhancements
 
-1. **iPadOS Status Bar Safe-Area Offset:** Automatically shifts the application canvas below the iPadOS Status Bar and multitasking window bar (`--ipad-status-offset: max(env(safe-area-inset-top, 0px), 26px)`) so top menu bars (`File`, `Edit`, `Image`, `Layer`, `View`, `Help`) are never covered and remain 100% accessible.
-2. **Floating Touch & Apple Pencil Helper (`⚙️`):** Adds a collapsible corner pill with:
-   * **`Right-Click`:** Tap to arm right-click mode, then touch anywhere on the canvas with your finger or Apple Pencil to open desktop context menus when using the iPad without a mouse or trackpad.
+> **100% Desktop Mouse, Trackpad & Keyboard Preservation:** All touch and gesture helpers are completely passive (`{ passive: true }`) and never intercept or alter external mouse, Magic Keyboard trackpad, physical keyboard shortcuts, Apple Pencil drawing, or single-finger interactions.
+
+1. **iPadOS Status Bar Safe-Area Alignment (`18px` Web / `0px` Native `.ipa`):** Positions the application canvas cleanly beneath the iPadOS Status Bar in Safari Home Screen mode (or `0px` fullscreen with hidden status bar and double-swipe-from-top in the native `.ipa` build) so top menu bars (`File`, `Edit`, `Image`, `Layer`, `View`, `Help`) are 100% accessible.
+2. **Draggable Floating Touch & Apple Pencil Dock (`⚙️`):** Hold and drag the `⚙️` button to park it anywhere along the screen (saved automatically in `localStorage`), or tap it to expand quick actions:
+   * **`↩️` (Undo) & `↪️` (Redo):** Instant one-tap `Ctrl+Z` and `Ctrl+Y` when working without a keyboard.
+   * **`⌫` (Delete):** Delete selected layers, shapes, or objects in one tap without opening the on-screen keyboard.
+   * **`Right-Click`:** Tap to arm right-click mode, then touch anywhere on the canvas with your finger or Apple Pencil to open desktop context menus.
    * **`⌨️` (Keyboard):** Summon the native iPadOS on-screen keyboard on demand.
-   * **`🔄` (Reload):** One-tap refresh to fetch the latest upstream release directly inside the fullscreen Home Screen app.
-3. **Native iPadOS Files Integration:** Opening and saving/exporting files connects directly to the native **iPadOS Files** app (`On My iPad`, `iCloud Drive`, and external USB-C storage).
-4. **Official Full-Bleed App Icons:** Automatically formats `storytold`'s official `1024x1024` app icons edge-to-edge for iPadOS Home Screen squircle masking.
+   * **`🔄` (Reload / Update):** Force a cache-bypassing refresh to immediately load the latest cloud release.
+3. **Procreate-Style Multi-Touch Gestures:**
+   * **Two-Finger Tap:** Instant **Undo (`Ctrl+Z`)** with a visual toast indicator.
+   * **Three-Finger Tap:** Instant **Redo (`Ctrl+Y`)** with a visual toast indicator.
+   * **Two-Finger Pinch:** Smoothly zooms the canvas in and out centered between your fingers (translating touch pinch into desktop `Ctrl + Wheel` zoom).
+4. **Native iPadOS "Save to Files" & Share Sheet Integration:** Intercepts WebAssembly `<a download>` and `showSaveFilePicker` exports on iPadOS to open the native **iPadOS Share / Save to Files sheet** (`On My iPad`, `iCloud Drive`, AirDrop, and external USB-C drives) directly over the app without leaving your workspace.
+5. **Persistent iPadOS Storage Lock:** Automatically requests `navigator.storage.persist()` so iPadOS treats your Home Screen apps as protected local storage.
+6. **Official Full-Bleed App Icons:** Automatically formats `storytold`'s official `1024x1024` app icons edge-to-edge for iPadOS Home Screen squircle masking.
 
 ---
 

@@ -138,6 +138,68 @@ TOUCH_HELPER_SCRIPT = """<script>
       });
     }
   }
+
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(function() {});
+  }
+
+  const isIPadDevice = /iPad|Macintosh/i.test(navigator.userAgent) && ('ontouchend' in document);
+  async function shareOrDownloadBlob(blob, filename, fallbackFn) {
+    const safeName = filename || "document";
+    if (isIPadDevice && navigator.canShare && navigator.share) {
+      try {
+        const file = new File([blob], safeName, { type: blob.type || "application/octet-stream" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: safeName });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+    if (fallbackFn) fallbackFn();
+  }
+
+  const origAnchorClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function() {
+    const hasDownload = this.hasAttribute("download") || Boolean(this.download);
+    const href = this.href || "";
+    const self = this;
+    const args = arguments;
+    if (isIPadDevice && hasDownload && (href.startsWith("blob:") || href.startsWith("data:"))) {
+      const fname = this.getAttribute("download") || this.download || "export";
+      fetch(href)
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          shareOrDownloadBlob(blob, fname, function() { origAnchorClick.apply(self, args); });
+        })
+        .catch(function() { origAnchorClick.apply(self, args); });
+      return;
+    }
+    return origAnchorClick.apply(this, arguments);
+  };
+
+  if (isIPadDevice && !window.showSaveFilePicker) {
+    window.showSaveFilePicker = async function(options) {
+      const suggestedName = (options && options.suggestedName) ? options.suggestedName : "document";
+      return {
+        name: suggestedName,
+        createWritable: async function() {
+          const chunks = [];
+          return {
+            write: async function(data) {
+              chunks.push((data && data.data) ? data.data : data);
+            },
+            close: async function() {
+              const blob = new Blob(chunks);
+              await shareOrDownloadBlob(blob, suggestedName);
+            }
+          };
+        }
+      };
+    };
+  }
+
   window.addEventListener("DOMContentLoaded", function() {
     const isNativeIpa = Boolean(
       (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.craftSaveFile) ||
@@ -175,48 +237,157 @@ TOUCH_HELPER_SCRIPT = """<script>
       }
       #craft-ipad-helper {
         position: fixed; right: 12px; bottom: 12px; z-index: 2147483647;
-        display: flex; align-items: center; gap: 6px;
-        background: rgba(24, 24, 28, 0.85);
-        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        display: flex; align-items: center; gap: 5px;
+        background: rgba(24, 24, 28, 0.88);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 999px; padding: 4px 8px;
+        border-radius: 999px; padding: 4px 7px;
         font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
-        color: #f0f0f5; box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+        color: #f0f0f5; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        touch-action: none; user-select: none; -webkit-user-select: none;
       }
       #craft-ipad-helper.collapsed .helper-btn { display: none; }
       #craft-ipad-helper button {
         appearance: none; border: none; background: rgba(255, 255, 255, 0.12);
-        color: #f0f0f5; padding: 6px 10px; border-radius: 999px; font: inherit; cursor: pointer;
+        color: #f0f0f5; padding: 6px 9px; border-radius: 999px; font: inherit; cursor: pointer;
+        white-space: nowrap;
       }
+      #craft-ipad-helper button:active { background: rgba(255, 255, 255, 0.24); }
       #craft-ipad-helper button.active { background: #0a84ff; color: #fff; }
+      #craft-ipad-toast {
+        position: fixed; top: calc(var(--ipad-status-offset) + 34px); left: 50%;
+        transform: translateX(-50%); z-index: 2147483647;
+        background: rgba(20, 20, 24, 0.88); color: #fff;
+        border: 1px solid rgba(255,255,255,0.16); border-radius: 999px;
+        padding: 6px 14px; font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+        pointer-events: none; opacity: 0; transition: opacity 0.15s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      }
+      #craft-ipad-toast.show { opacity: 1; }
     `;
     document.head.appendChild(style);
+
+    const toast = document.createElement("div");
+    toast.id = "craft-ipad-toast";
+    document.body.appendChild(toast);
+    let toastTimer = null;
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function() { toast.classList.remove("show"); }, 650);
+    }
+
+    function sendKeyShortcut(key, code, keyCode, ctrlOrCmd, shift) {
+      const opts = {
+        key: key, code: code, keyCode: keyCode, which: keyCode,
+        ctrlKey: Boolean(ctrlOrCmd), metaKey: Boolean(ctrlOrCmd), shiftKey: Boolean(shift),
+        bubbles: true, cancelable: true
+      };
+      const target = document.querySelector("canvas") || window;
+      target.dispatchEvent(new KeyboardEvent("keydown", opts));
+      window.dispatchEvent(new KeyboardEvent("keydown", opts));
+      setTimeout(function() {
+        target.dispatchEvent(new KeyboardEvent("keyup", opts));
+        window.dispatchEvent(new KeyboardEvent("keyup", opts));
+      }, 20);
+    }
 
     let rightClickArmed = false;
     const bar = document.createElement("div");
     bar.id = "craft-ipad-helper";
     bar.className = "collapsed";
     bar.innerHTML = `
+      <button id="craft-undo-btn" class="helper-btn" title="Undo (Ctrl+Z)">↩️</button>
+      <button id="craft-redo-btn" class="helper-btn" title="Redo (Ctrl+Y)">↪️</button>
+      <button id="craft-del-btn" class="helper-btn" title="Delete Selected">⌫</button>
       <button id="craft-rc-btn" class="helper-btn" title="Tap then touch canvas to Right-Click">Right-Click</button>
       <button id="craft-kb-btn" class="helper-btn" title="Open On-Screen Keyboard">⌨️</button>
       <button id="craft-reload-btn" class="helper-btn" title="Reload / Fetch Latest Update">🔄</button>
-      <button id="craft-toggle-btn" title="iPad Touch Tools">⚙️</button>
+      <button id="craft-toggle-btn" title="Tap to open tools, or drag to move">⚙️</button>
     `;
     document.body.appendChild(bar);
 
+    try {
+      const savedPos = JSON.parse(localStorage.getItem("craft_helper_pos") || "null");
+      if (savedPos && typeof savedPos.left === "number" && typeof savedPos.top === "number") {
+        const maxLeft = Math.max(8, window.innerWidth - 60);
+        const maxTop = Math.max(24, window.innerHeight - 48);
+        bar.style.left = Math.min(Math.max(8, savedPos.left), maxLeft) + "px";
+        bar.style.top = Math.min(Math.max(24, savedPos.top), maxTop) + "px";
+        bar.style.right = "auto";
+        bar.style.bottom = "auto";
+      }
+    } catch (e) {}
+
+    const undoBtn = document.getElementById("craft-undo-btn");
+    const redoBtn = document.getElementById("craft-redo-btn");
+    const delBtn = document.getElementById("craft-del-btn");
     const rcBtn = document.getElementById("craft-rc-btn");
     const kbBtn = document.getElementById("craft-kb-btn");
     const reloadBtn = document.getElementById("craft-reload-btn");
     const toggleBtn = document.getElementById("craft-toggle-btn");
 
+    // Draggable + Tappable toggle button
+    let dragStart = null;
+    let didDragPill = false;
     toggleBtn.addEventListener("pointerdown", function(e) {
       e.stopPropagation();
-      bar.classList.toggle("collapsed");
+      toggleBtn.setPointerCapture(e.pointerId);
+      const rect = bar.getBoundingClientRect();
+      dragStart = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top };
+      didDragPill = false;
+    });
+    toggleBtn.addEventListener("pointermove", function(e) {
+      if (!dragStart) return;
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
+      if (Math.hypot(dx, dy) > 6) {
+        didDragPill = true;
+        const rect = bar.getBoundingClientRect();
+        const newLeft = Math.min(Math.max(6, dragStart.left + dx), window.innerWidth - rect.width - 6);
+        const newTop = Math.min(Math.max(20, dragStart.top + dy), window.innerHeight - rect.height - 6);
+        bar.style.left = newLeft + "px";
+        bar.style.top = newTop + "px";
+        bar.style.right = "auto";
+        bar.style.bottom = "auto";
+      }
+    });
+    toggleBtn.addEventListener("pointerup", function(e) {
+      if (!dragStart) return;
+      e.stopPropagation();
+      if (didDragPill) {
+        try {
+          const rect = bar.getBoundingClientRect();
+          localStorage.setItem("craft_helper_pos", JSON.stringify({ left: rect.left, top: rect.top }));
+        } catch (err) {}
+      } else {
+        bar.classList.toggle("collapsed");
+      }
+      dragStart = null;
+      didDragPill = false;
+    });
+
+    undoBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      sendKeyShortcut("z", "KeyZ", 90, true, false);
+      showToast("↩️ Undo");
+    });
+    redoBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      sendKeyShortcut("y", "KeyY", 89, true, false);
+      showToast("↪️ Redo");
+    });
+    delBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      sendKeyShortcut("Delete", "Delete", 46, false, false);
+      sendKeyShortcut("Backspace", "Backspace", 8, false, false);
     });
     rcBtn.addEventListener("pointerdown", function(e) {
       e.stopPropagation();
       rightClickArmed = !rightClickArmed;
       rcBtn.classList.toggle("active", rightClickArmed);
+      if (rightClickArmed) showToast("Tap canvas to Right-Click");
     });
     kbBtn.addEventListener("pointerdown", function(e) {
       e.stopPropagation();
@@ -233,6 +404,7 @@ TOUCH_HELPER_SCRIPT = """<script>
       e.stopPropagation();
       window.location.replace(window.location.pathname + "?v=" + Date.now());
     });
+
     window.addEventListener("pointerdown", function(e) {
       if (!rightClickArmed || bar.contains(e.target)) return;
       rightClickArmed = false;
@@ -251,6 +423,81 @@ TOUCH_HELPER_SCRIPT = """<script>
       e.target.dispatchEvent(new PointerEvent("pointerup", { ...opts, buttons: 0 }));
       e.target.dispatchEvent(new MouseEvent("mouseup", { ...opts, buttons: 0 }));
     }, true);
+
+    // Passive multi-finger touch gestures (2-finger tap = Undo, 3-finger tap = Redo, 2-finger pinch = Zoom)
+    // Never intercepts mouse, trackpad, keyboard, Apple Pencil, or 1-finger touch events
+    let touchState = null;
+    window.addEventListener("touchstart", function(e) {
+      if (bar.contains(e.target)) return;
+      const count = e.touches.length;
+      if (count >= 2) {
+        const pts = [];
+        for (let i = 0; i < count; i++) {
+          pts.push({ x: e.touches[i].clientX, y: e.touches[i].clientY });
+        }
+        const dist = count === 2 ? Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) : 0;
+        touchState = {
+          maxFingers: Math.max(touchState ? touchState.maxFingers : 0, count),
+          startTime: touchState ? touchState.startTime : Date.now(),
+          startPts: pts,
+          lastDist: dist,
+          maxMove: touchState ? touchState.maxMove : 0
+        };
+      }
+    }, { passive: true });
+
+    window.addEventListener("touchmove", function(e) {
+      if (!touchState) return;
+      const count = e.touches.length;
+      if (count >= 2 && touchState.startPts.length >= 2) {
+        const dx0 = e.touches[0].clientX - touchState.startPts[0].x;
+        const dy0 = e.touches[0].clientY - touchState.startPts[0].y;
+        touchState.maxMove = Math.max(touchState.maxMove, Math.hypot(dx0, dy0));
+
+        if (count === 2) {
+          const x0 = e.touches[0].clientX, y0 = e.touches[0].clientY;
+          const x1 = e.touches[1].clientX, y1 = e.touches[1].clientY;
+          const newDist = Math.hypot(x1 - x0, y1 - y0);
+          const deltaDist = touchState.lastDist - newDist;
+          if (Math.abs(deltaDist) > 3 && touchState.maxMove > 12) {
+            const canvas = document.querySelector("canvas");
+            if (canvas) {
+              canvas.dispatchEvent(new WheelEvent("wheel", {
+                deltaY: deltaDist * 1.4,
+                ctrlKey: true,
+                metaKey: true,
+                clientX: (x0 + x1) / 2,
+                clientY: (y0 + y1) / 2,
+                bubbles: true,
+                cancelable: true
+              }));
+            }
+            touchState.lastDist = newDist;
+          }
+        }
+      }
+    }, { passive: true });
+
+    window.addEventListener("touchend", function(e) {
+      if (!touchState) return;
+      if (e.touches.length === 0) {
+        const elapsed = Date.now() - touchState.startTime;
+        if (elapsed < 260 && touchState.maxMove < 14) {
+          if (touchState.maxFingers === 2) {
+            sendKeyShortcut("z", "KeyZ", 90, true, false);
+            showToast("↩️ Undo");
+          } else if (touchState.maxFingers === 3) {
+            sendKeyShortcut("y", "KeyY", 89, true, false);
+            showToast("↪️ Redo");
+          }
+        }
+        touchState = null;
+      }
+    }, { passive: true });
+
+    window.addEventListener("touchcancel", function() {
+      touchState = null;
+    }, { passive: true });
   });
 })();
 </script>"""
