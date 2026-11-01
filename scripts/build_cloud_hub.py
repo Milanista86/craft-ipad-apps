@@ -911,6 +911,16 @@ def generate_hub_index(out_root: Path):
       </ol>
     </div>
 
+    <div class="panel">
+      <h3>Built-In iPadOS Enhancements (100% Desktop Mouse &amp; Keyboard Compatible):</h3>
+      <ol>
+        <li><strong>Draggable Floating Tool Dock (⚙️):</strong> Press and drag the <strong>⚙️</strong> pill to park it anywhere on screen, or tap it for one-tap <strong>↩️ Undo</strong>, <strong>↪️ Redo</strong>, <strong>⌫ Delete</strong>, <strong>Right-Click</strong>, <strong>⌨️ On-Screen Keyboard</strong>, and <strong>🔄 Instant Cloud Update</strong>.</li>
+        <li><strong>Procreate-Style Multi-Touch Gestures:</strong> <strong>Two-finger tap</strong> to Undo (<code>Ctrl+Z</code>), <strong>Three-finger tap</strong> to Redo (<code>Ctrl+Y</code>), and <strong>Two-finger pinch</strong> to smoothly zoom the canvas.</li>
+        <li><strong>Native iPadOS "Save to Files" Share Sheet:</strong> Exporting or saving files opens the native iPadOS Share / Save to Files sheet directly over your workspace.</li>
+        <li><strong>100% Desktop Fidelity:</strong> All touch helpers are passive—external mice, Magic Keyboard trackpads, physical keyboard shortcuts, and Apple Pencil work identically to the desktop versions.</li>
+      </ol>
+    </div>
+
     <div class="footer">
       <a href="https://github.com/Milanista86/craft-ipad-apps">GitHub Repository &amp; Documentation</a> &middot;
       <a href="https://github.com/Milanista86/craft-ipad-apps/releases">All 13 Native .ipa Downloads</a> &middot;
