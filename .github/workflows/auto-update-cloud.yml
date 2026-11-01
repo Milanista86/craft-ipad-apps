@@ -16,10 +16,14 @@ permissions:
 jobs:
   deploy-cloud-suite:
     name: Build & Deploy All 13 ArtCraft Apps to GitHub Pages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v4
+        run: |
+          git init
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git fetch --depth=1 origin main
+          git checkout -f FETCH_HEAD
 
       - name: Install Python Pillow
         run: pip install --quiet Pillow
