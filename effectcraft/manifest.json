@@ -1,0 +1,24 @@
+{
+  "name": "EffectCraft",
+  "short_name": "EffectCraft",
+  "description": "Keyframe motion graphics, hybrid layer and node compositing, particle emitters, camera tracking, and procedural VFX.",
+  "start_url": "./?v=4",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e0368f",
+  "theme_color": "#1c1c1e",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png?v=4",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon.png?v=4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
