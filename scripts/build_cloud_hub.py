@@ -31,7 +31,7 @@ APPS = [
         "color": "#2f7bf5",
         "ink_dark": "#7fb0ff",
         "ink_light": "#1a5bc4",
-        "preview": "https://getartcraft.com/images/apps/photocraft/hero.webp",
+        "menus": "File  Edit  Image  Layer  Type  Select  Filter  View",
         "tags": ["PSD / PSB", "RAW", "Adjustment Layers", "Brush Engine"],
     },
     {
@@ -47,7 +47,7 @@ APPS = [
         "color": "#e8573f",
         "ink_dark": "#ff8a70",
         "ink_light": "#b83a24",
-        "preview": "https://getartcraft.com/images/apps/vectorcraft/hero.webp",
+        "menus": "File  Edit  Object  Type  Select  Effect  View  Window",
         "tags": ["SVG / AI / EPS", "Bezier Pen", "Boolean Ops", "CMYK & Pantone"],
     },
     {
@@ -63,7 +63,7 @@ APPS = [
         "color": "#7bb51c",
         "ink_dark": "#a6e04a",
         "ink_light": "#457008",
-        "preview": "https://getartcraft.com/images/apps/designcraft/hero.webp",
+        "menus": "File  Edit  Layout  Type  Object  Table  View  Window",
         "tags": ["IDML / PDF-X", "Master Pages", "Threaded Text", "CMYK Print"],
     },
     {
@@ -79,7 +79,7 @@ APPS = [
         "color": "#f2a516",
         "ink_dark": "#ffc14d",
         "ink_light": "#8a5800",
-        "preview": "https://getartcraft.com/images/apps/lightcraft/hero.webp",
+        "menus": "File  Edit  Library  Photo  Develop  Metadata  View",
         "tags": ["CR3 / NEF / ARW", "32-Bit Float", "LUTs & Curves", "Catalog"],
     },
     {
@@ -95,7 +95,7 @@ APPS = [
         "color": "#8b5cf6",
         "ink_dark": "#b69cff",
         "ink_light": "#6a3fd6",
-        "preview": "https://getartcraft.com/images/apps/filmcraft/color.webp",
+        "menus": "File  Edit  Clip  Sequence  Markers  Color  Audio  View",
         "tags": ["4K / ProRes", "Multi-Track NLE", "Color Wheels", "Audio Mix"],
     },
     {
@@ -111,7 +111,7 @@ APPS = [
         "color": "#e0368f",
         "ink_dark": "#ff7ab8",
         "ink_light": "#b0206c",
-        "preview": "https://getartcraft.com/images/apps/effectcraft/hero.webp",
+        "menus": "File  Edit  Composition  Layer  Effect  Animation  View",
         "tags": ["Graph Editor", "Node + Layer", "3D Camera", "Particles & Shaders"],
     },
     {
@@ -127,7 +127,7 @@ APPS = [
         "color": "#02da96",
         "ink_dark": "#3fe6ae",
         "ink_light": "#017a54",
-        "preview": "https://getartcraft.com/images/apps/figcraft/hero.webp",
+        "menus": "File  Edit  View  Object  Text  Arrange  Vector  Plugins",
         "tags": ["Auto-Layout", "Design Tokens", "Prototyping", "Code Inspect"],
     },
     # Office, Audio & Engineering Suite
@@ -144,7 +144,7 @@ APPS = [
         "color": "#4c6ef5",
         "ink_dark": "#8da2fb",
         "ink_light": "#253e99",
-        "preview": "https://getartcraft.com/images/apps/wordcraft/hero.webp",
+        "menus": "File  Home  Insert  Design  Layout  References  Review  View",
         "tags": ["DOCX / ODT", "Track Changes", "Citations & TOC", "Print Layout"],
     },
     {
@@ -160,7 +160,7 @@ APPS = [
         "color": "#1f9d55",
         "ink_dark": "#5ee089",
         "ink_light": "#136938",
-        "preview": "https://getartcraft.com/images/apps/gridcraft/hero.webp",
+        "menus": "File  Home  Insert  Page Layout  Formulas  Data  Review  View",
         "tags": ["XLSX / CSV", "400+ Formulas", "Pivot Tables", "Charts"],
     },
     {
@@ -176,7 +176,7 @@ APPS = [
         "color": "#f26b1d",
         "ink_dark": "#ff9657",
         "ink_light": "#ad4306",
-        "preview": "https://getartcraft.com/images/apps/deckcraft/hero.webp",
+        "menus": "File  Home  Insert  Design  Transitions  Animations  Slide Show",
         "tags": ["PPTX / PDF", "Master Slides", "Animations", "Presenter View"],
     },
     {
@@ -192,7 +192,7 @@ APPS = [
         "color": "#e8204f",
         "ink_dark": "#f23a62",
         "ink_light": "#b70228",
-        "preview": "https://getartcraft.com/images/apps/pdfcraft/hero.webp",
+        "menus": "File  Edit  View  Document  Pages  Forms  Protect  Comment",
         "tags": ["PDF Edit & OCR", "Merge & Split", "Redaction", "Forms & Sign"],
     },
     {
@@ -208,7 +208,7 @@ APPS = [
         "color": "#14a9c4",
         "ink_dark": "#52d1ea",
         "ink_light": "#0b6f82",
-        "preview": "https://getartcraft.com/images/apps/soundcraft/hero.webp",
+        "menus": "File  Edit  Track  Clip  Event  AudioSuite  Mix  Window",
         "tags": ["Multitrack DAW", "MIDI & Synths", "FX Rack", "WAV / FLAC"],
     },
     {
@@ -224,7 +224,7 @@ APPS = [
         "color": "#14a3c7",
         "ink_dark": "#4cc7e6",
         "ink_light": "#09596d",
-        "preview": "https://getartcraft.com/images/apps/cadcraft/hero.webp",
+        "menus": "File  Edit  View  Draw  Dimension  Modify  Parametric  Solid",
         "tags": ["DXF / DWG / STEP", "2D Drafting", "3D B-Rep Solids", "Dimensions"],
     },
 ]
@@ -844,8 +844,21 @@ def generate_hub_index(out_root: Path):
               <span class="hud-label card-equiv">{app['equiv']}</span>
             </div>
             <a href="./{app['id']}/?v=4" class="card-preview" aria-label="Launch {app['name']}">
-              <img src="{app['preview']}" alt="{app['name']} workspace preview" loading="lazy" onerror="this.style.display='none'">
-              <div class="preview-pill">LIVE IPADOS WEBASM</div>
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">{app['menus']}</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">{app['prefix']}<span>{app['suffix']}</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
             </a>
             <div class="card-body">
               <div class="card-title-row">
@@ -889,10 +902,10 @@ def generate_hub_index(out_root: Path):
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-  <title>ArtCraft Suite for iPadOS — Thirteen Apps. One Craft.</title>
-  <meta name="description" content="Run all 13 open-source desktop creative, office, audio, and CAD apps by ArtCraft (@storytold) natively on iPadOS — with full Mouse, Trackpad, Keyboard, and Apple Pencil support.">
-  <meta property="og:title" content="ArtCraft Suite for iPadOS — Thirteen Apps. One Craft.">
-  <meta property="og:description" content="Photoshop, Illustrator, InDesign, Lightroom, Premiere, After Effects, Figma, Word, Excel, PowerPoint, Acrobat, Pro Tools & AutoCAD alternatives built in Rust for iPadOS.">
+  <title>Craft for iPadOS (Community Hub) — 13 Open-Source Desktop Apps Adapted for iPad</title>
+  <meta name="description" content="Unofficial community port by @Milanista86 adapting the 13 open-source Rust desktop creative, office, audio, and CAD apps by ArtCraft (@storytold) for iPadOS.">
+  <meta property="og:title" content="Craft for iPadOS — Community iPadOS Port by @Milanista86">
+  <meta property="og:description" content="Run all 13 open-source desktop apps by ArtCraft (@storytold) on iPadOS with full Mouse, Trackpad, Keyboard, and Apple Pencil support.">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/png" href="./photocraft/apple-touch-icon.png?v=4">
   <link rel="apple-touch-icon" href="./photocraft/apple-touch-icon.png?v=4">
@@ -1042,9 +1055,10 @@ def generate_hub_index(out_root: Path):
       color: var(--ink-strong);
     }}
     .brand svg {{
-      width: 22px;
-      height: 18px;
-      fill: currentColor;
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
       flex-shrink: 0;
     }}
     .brand-badge {{
@@ -1512,43 +1526,152 @@ def generate_hub_index(out_root: Path):
     .card-equiv {{
       color: var(--muted);
     }}
-    /* 16:10 Official App Workspace Preview */
+    /* 16:10 Self-Contained iPadOS Desktop Workspace Blueprint Preview */
     .card-preview {{
       position: relative;
-      aspect-ratio: 16 / 9.4;
+      aspect-ratio: 16 / 9.2;
       width: 100%;
       overflow: hidden;
       background:
-        radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--app) 28%, transparent), transparent 60%),
-        var(--bg-sunken);
+        radial-gradient(circle at 78% 28%, color-mix(in srgb, var(--app) 26%, transparent), transparent 62%),
+        linear-gradient(180deg, rgba(16, 17, 22, 0.96) 0%, rgba(10, 11, 14, 0.99) 100%);
       border-bottom: 1px solid var(--line);
-      display: block;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }}
-    .card-preview img {{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top center;
-      display: block;
-      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-    }}
-    .app-card:hover .card-preview img {{
-      transform: scale(1.03);
-    }}
-    .preview-pill {{
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      padding: 3px 8px;
-      background: rgba(10, 11, 14, 0.78);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #f2f1ee;
+    .preview-menubar {{
+      height: 26px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       font-family: var(--font-mono);
       font-size: 9.5px;
-      font-weight: 600;
+      color: rgba(242, 241, 238, 0.68);
+      white-space: nowrap;
+      overflow: hidden;
+    }}
+    .preview-menubar-left {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }}
+    .preview-dot {{
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--app);
+      box-shadow: 0 0 8px var(--app);
+      flex-shrink: 0;
+    }}
+    .preview-menus {{
+      letter-spacing: 0.04em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+    .preview-status {{
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--app-dark);
+      padding: 2px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.35);
+      flex-shrink: 0;
+    }}
+    .preview-canvas {{
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px 28px 96px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }}
+    .preview-blueprint {{
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      background: rgba(14, 15, 19, 0.68);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }}
+    .app-card:hover .preview-blueprint {{
+      border-color: var(--app);
+      transform: translateY(-2px);
+    }}
+    .preview-spec-top {{
+      font-family: var(--font-mono);
+      font-size: 8.5px;
       letter-spacing: 0.14em;
+      color: rgba(242, 241, 238, 0.5);
+      text-transform: uppercase;
+    }}
+    .preview-watermark {{
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }}
+    .preview-watermark span {{
+      color: var(--app-dark);
+    }}
+    .preview-spec-bot {{
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: rgba(242, 241, 238, 0.72);
+    }}
+    .preview-dock-pill {{
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(24, 26, 32, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #f2f1ee;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }}
+    /* Community Credit Notice Banner */
+    .credit-banner {{
+      padding: 14px 24px;
+      background: rgba(45, 129, 255, 0.07);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }}
+    .credit-banner strong {{
+      color: var(--ink-strong);
+      font-weight: 600;
+    }}
+    .credit-banner a {{
+      color: var(--accent-ink);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }}
     /* Card Content Body */
     .card-body {{
@@ -1933,11 +2056,13 @@ def generate_hub_index(out_root: Path):
   <header class="top-nav">
     <div class="top-nav-inner">
       <a href="#" class="brand">
-        <svg viewBox="0 0 116.34 97.5" aria-hidden="true">
-          <path d="M104.28,49.49L81.55,0h-31.23l-3.17,4.76L14.75,53.63,0,75.85l21.55,21.55,63.79-36.94,16.99,37.04,14.01-21.74-12.06-26.27ZM32.89,65.66l32.42-48.87,10.91,23.77-43.32,25.09Z"/>
+        <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
+          <line x1="6" y1="12" x2="6.01" y2="12"/>
+          <path d="M14.5 9.5l2.5 2.5-4.5 4.5H10v-2.5l4.5-4.5z"/>
         </svg>
-        <span>ArtCraft</span>
-        <span class="brand-badge">iPadOS Suite</span>
+        <span>Craft for iPadOS</span>
+        <span class="brand-badge">Community Port</span>
       </a>
       <nav class="nav-links" aria-label="Primary Navigation">
         <a href="#lineup">01 / Lineup (13)</a>
@@ -1958,13 +2083,21 @@ def generate_hub_index(out_root: Path):
     </div>
   </header>
   <main class="frame">
+    <!-- Prominent Open-Source Creator Credit & Community Port Disclaimer -->
+    <div class="credit-banner">
+      <div>
+        <strong>Unofficial Community Port by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">@Milanista86</a>:</strong>
+        Adapting the 13 open-source desktop applications created by <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> for fullscreen iPadOS use. All credit for the core engines &amp; icons belongs to <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">@storytold</a>.
+      </div>
+      <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" class="hud-label" style="color: var(--accent-ink);">Visit Official ArtCraft Site ↗</a>
+    </div>
     <!-- Section 01: Hero & Interactive 13-App Dock -->
     <div class="section-bar">
       <div class="section-bar-left">
         <span class="section-dot"></span>
-        <span class="hud-label">01 / ArtCraft Suite for iPadOS</span>
+        <span class="hud-label">01 / Community iPadOS Adaptation</span>
       </div>
-      <span class="hud-label">Thirteen Apps &middot; Pure Rust + WebAssembly &middot; Open Source</span>
+      <span class="hud-label">13 Open-Source Apps &middot; Upstream by @storytold &middot; iPadOS Layer by @Milanista86</span>
     </div>
     <section class="hero-grid">
       <div class="hero-left">
@@ -1975,14 +2108,14 @@ def generate_hub_index(out_root: Path):
         <div>
           <div class="status-pill">
             <span class="pulse-dot"></span>
-            <span class="hud-label" style="color: var(--ink-strong);">Live Cloud Hub &middot; Auto-Synced Weekly from @storytold</span>
+            <span class="hud-label" style="color: var(--ink-strong);">Unofficial Community Hub &middot; Auto-Synced Weekly from @storytold</span>
           </div>
           <h1 class="font-display hero-title">
-            Thirteen apps.<br>
-            One <span class="font-serif">craft</span> — on iPadOS.
+            Desktop creative &amp; office apps —<br>
+            <span class="font-serif">adapted</span> for iPadOS.
           </h1>
           <p class="hero-lead">
-            The complete open-source creative, office, audio, and CAD desktop suite by <strong><a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; text-underline-offset: 3px;">ArtCraft (@storytold)</a></strong>, engineered to run fullscreen on your iPad. Enjoy <strong>100% desktop mouse, trackpad &amp; keyboard fidelity</strong> alongside a draggable Apple Pencil tool dock, Procreate-style multi-touch gestures, and native iPadOS Files integration.
+            An open-source community port bringing all 13 Rust &amp; WebAssembly desktop applications by <strong><a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; text-underline-offset: 3px;">ArtCraft (@storytold)</a></strong> to your iPad. Enjoy <strong>100% desktop mouse, trackpad &amp; keyboard fidelity</strong> alongside our custom draggable Apple Pencil tool dock, Procreate-style multi-touch gestures, and native iPadOS Files integration.
           </p>
         </div>
         <div class="hero-cta-row">
@@ -2183,13 +2316,15 @@ def generate_hub_index(out_root: Path):
       <div class="footer-top">
         <div class="footer-brand-col">
           <div class="brand">
-            <svg viewBox="0 0 116.34 97.5" aria-hidden="true">
-              <path d="M104.28,49.49L81.55,0h-31.23l-3.17,4.76L14.75,53.63,0,75.85l21.55,21.55,63.79-36.94,16.99,37.04,14.01-21.74-12.06-26.27ZM32.89,65.66l32.42-48.87,10.91,23.77-43.32,25.09Z"/>
+            <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
+              <line x1="6" y1="12" x2="6.01" y2="12"/>
+              <path d="M14.5 9.5l2.5 2.5-4.5 4.5H10v-2.5l4.5-4.5z"/>
             </svg>
-            <span>ArtCraft Suite for iPadOS</span>
+            <span>Craft for iPadOS (Community Hub)</span>
           </div>
           <p>
-            iPadOS Cloud PWA &amp; Native <code>.ipa</code> distribution maintained by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">Milanista86</a>. Powered by the open-source Rust &amp; WebAssembly creative and office engines from <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">getartcraft.com (@storytold)</a>.
+            Unofficial, non-commercial community iPadOS adaptation maintained by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">@Milanista86</a>. All 13 core Rust &amp; WebAssembly applications and icons are created by and copyright <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">ArtCraft (@storytold)</a> under MIT / Apache-2.0 licenses.
           </p>
         </div>
         <div class="footer-apps-grid">
