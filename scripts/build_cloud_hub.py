@@ -849,7 +849,7 @@ def generate_hub_index(out_root: Path):
               <h2 class="card-title">
                 <a href="./{app['id']}/?v=4">{app['prefix']}<span class="craft-tint">{app['suffix']}</span></a>
               </h2>
-              <div class="card-equiv">{app['role']} &middot; {short_equiv}</div>
+              <div class="card-equiv" title="{app['role']}">{short_equiv}</div>
             </div>
           </div>
           <p class="card-desc">{app['desc']}</p>
