@@ -838,7 +838,7 @@ def generate_hub_index(out_root: Path):
     for app in APPS:
         cat_slug = "creative" if app["category"] == "Creative & Design" else "office"
         short_equiv = app["equiv"].replace("Adobe ", "").replace("Microsoft ", "").replace("Avid ", "")
-        tags_html = "".join(f'<span class="tag">{t}</span>' for t in app["tags"][:3])
+        tags_html = "".join(f'<span class="tag">{t}</span>' for t in app["tags"][:2])
         search_blob = f"{app['name']} {app['role']} {app['equiv']} {app['desc']} {' '.join(app['tags'])}".lower()
         lineup_cards.append(f"""        <article id="app-{app['id']}" class="app-card" data-cat="{cat_slug}" data-search="{search_blob}" style="--app: {app['color']}; --app-dark: {app['ink_dark']}; --app-light: {app['ink_light']};">
           <div class="card-top">
@@ -846,13 +846,10 @@ def generate_hub_index(out_root: Path):
               <img src="./{app['id']}/icon.png?v=4" alt="{app['name']} icon" loading="lazy">
             </a>
             <div class="card-heading">
-              <div class="card-title-line">
-                <h2 class="card-title">
-                  <a href="./{app['id']}/?v=4">{app['prefix']}<span class="craft-tint">{app['suffix']}</span></a>
-                </h2>
-                <span class="role-pill">{app['role']}</span>
-              </div>
-              <div class="card-equiv">{short_equiv}</div>
+              <h2 class="card-title">
+                <a href="./{app['id']}/?v=4">{app['prefix']}<span class="craft-tint">{app['suffix']}</span></a>
+              </h2>
+              <div class="card-equiv">{app['role']} &middot; {short_equiv}</div>
             </div>
           </div>
           <p class="card-desc">{app['desc']}</p>
@@ -1308,8 +1305,9 @@ def generate_hub_index(out_root: Path):
     }}
     .card-tags {{
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 5px;
+      overflow: hidden;
     }}
     .tag {{
       font-family: var(--font-mono);
@@ -1319,6 +1317,7 @@ def generate_hub_index(out_root: Path):
       border-radius: 6px;
       background: var(--surface-subtle);
       color: var(--text-secondary);
+      white-space: nowrap;
     }}
     .card-footer {{
       display: flex;
