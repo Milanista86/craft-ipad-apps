@@ -1438,18 +1438,29 @@ def generate_hub_index(out_root: Path):
       color: var(--accent);
       flex-shrink: 0;
     }}
-    /* Clean Minimal Footer */
+    /* Clean Minimal Centered Footer */
     .site-footer {{
-      margin-top: 40px;
-      padding-top: 24px;
+      margin-top: 48px;
+      padding-top: 28px;
       border-top: 1px solid var(--border);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
+      text-align: center;
+      gap: 10px;
       font-size: 12.5px;
+      line-height: 1.6;
       color: var(--text-muted);
+      max-width: 780px;
+      margin-left: auto;
+      margin-right: auto;
+    }}
+    .footer-links {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px 14px;
     }}
     .site-footer a {{
       color: var(--text-secondary);
@@ -1582,7 +1593,7 @@ def generate_hub_index(out_root: Path):
       <div>
         Unofficial, non-commercial iPadOS adaptation by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">@Milanista86</a>. All 13 core applications &amp; icons are created by <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> (MIT / Apache-2.0).
       </div>
-      <div>
+      <div class="footer-links">
         <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">Official ArtCraft Site</a> &middot;
         <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">@storytold GitHub</a> &middot;
         <a href="https://github.com/Milanista86/craft-ipad-apps/releases" target="_blank" rel="noopener noreferrer">Download .IPA Suite</a>
