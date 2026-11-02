@@ -1,0 +1,24 @@
+{
+  "name": "GridCraft",
+  "short_name": "GridCraft",
+  "description": "High-speed spreadsheet engine with 400+ formulas, pivot tables, financial models, conditional formatting, and XLSX/CSV support.",
+  "start_url": "./?v=4",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1f9d55",
+  "theme_color": "#1c1c1e",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png?v=4",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon.png?v=4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

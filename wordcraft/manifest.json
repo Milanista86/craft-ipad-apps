@@ -1,0 +1,24 @@
+{
+  "name": "WordCraft",
+  "short_name": "WordCraft",
+  "description": "Full Ribbon word processor with real-time paginated layout, paragraph styles, track changes, tables, and native DOCX/ODT support.",
+  "start_url": "./?v=4",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#3b5bdb",
+  "theme_color": "#1c1c1e",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png?v=4",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon.png?v=4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

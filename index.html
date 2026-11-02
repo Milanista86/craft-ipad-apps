@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <title>Craft for iPadOS (Community Hub) — 13 Open-Source Desktop Apps Adapted for iPad</title>
+  <meta name="description" content="Unofficial community port by @Milanista86 adapting the 13 open-source Rust desktop creative, office, audio, and CAD apps by ArtCraft (@storytold) for iPadOS.">
+  <meta property="og:title" content="Craft for iPadOS — Community iPadOS Port by @Milanista86">
+  <meta property="og:description" content="Run all 13 open-source desktop apps by ArtCraft (@storytold) on iPadOS with full Mouse, Trackpad, Keyboard, and Apple Pencil support.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="./photocraft/apple-touch-icon.png?v=4">
+  <link rel="apple-touch-icon" href="./photocraft/apple-touch-icon.png?v=4">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@118,500..800&family=Geist+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('artcraft_ipad_theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', saved);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #f2f1ee;
+      --bg-raised: #faf9f7;
+      --bg-sunken: #e9e8e4;
+      --bg-glass: rgba(242, 241, 238, 0.86);
+      --ink: #101014;
+      --ink-strong: #000000;
+      --muted: rgba(16, 16, 20, 0.64);
+      --faint: rgba(16, 16, 20, 0.42);
+      --line: rgba(16, 16, 20, 0.16);
+      --line-strong: rgba(16, 16, 20, 0.42);
+      --accent: #2d81ff;
+      --accent-ink: #1659c4;
+      --invert-bg: #101014;
+      --invert-fg: #f2f1ee;
+      --emerald: #10b981;
+      --font-display: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      color-scheme: light;
+    }
+    :root[data-theme="dark"] {
+      --bg: #121316;
+      --bg-raised: #101014;
+      --bg-sunken: #08090b;
+      --bg-glass: rgba(18, 19, 22, 0.86);
+      --ink: #f2f1ee;
+      --ink-strong: #ffffff;
+      --muted: rgba(242, 241, 238, 0.62);
+      --faint: rgba(242, 241, 238, 0.38);
+      --line: rgba(242, 241, 238, 0.14);
+      --line-strong: rgba(242, 241, 238, 0.38);
+      --accent: #2d81ff;
+      --accent-ink: #74aaff;
+      --invert-bg: #ffffff;
+      --invert-fg: #0b0b0c;
+      --emerald: #34d399;
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    /* Typography Helpers */
+    .font-display {
+      font-family: var(--font-display);
+      font-weight: 650;
+      font-stretch: 118%;
+      letter-spacing: -0.035em;
+      line-height: 1.02;
+      font-variation-settings: "wdth" 118;
+    }
+    .font-serif {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: -0.01em;
+    }
+    .hud-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+    /* Corner Crosshair Ticks */
+    .tick {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .tick-tl { top: -1px; left: -1px; border-top: 1.5px solid var(--ink-strong); border-left: 1.5px solid var(--ink-strong); }
+    .tick-tr { top: -1px; right: -1px; border-top: 1.5px solid var(--ink-strong); border-right: 1.5px solid var(--ink-strong); }
+    .tick-bl { bottom: -1px; left: -1px; border-bottom: 1.5px solid var(--ink-strong); border-left: 1.5px solid var(--ink-strong); }
+    .tick-br { bottom: -1px; right: -1px; border-bottom: 1.5px solid var(--ink-strong); border-right: 1.5px solid var(--ink-strong); }
+    /* Sticky Top HUD Header */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 48px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    .top-nav-inner {
+      max-width: 1280px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      color: var(--ink-strong);
+    }
+    .brand svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      flex-shrink: 0;
+    }
+    .brand-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border: 1px solid var(--line-strong);
+      color: var(--accent-ink);
+      background: rgba(45, 129, 255, 0.08);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      transition: color 0.15s ease;
+    }
+    .nav-links a:hover {
+      color: var(--ink-strong);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .icon-btn {
+      height: 30px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:hover {
+      color: var(--ink-strong);
+      border-color: var(--line-strong);
+      background: var(--bg-raised);
+    }
+    .nav-cta {
+      height: 30px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--invert-bg);
+      color: var(--invert-fg);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: opacity 0.15s ease;
+    }
+    .nav-cta:hover {
+      opacity: 0.86;
+    }
+    /* Main Architectural Frame */
+    .frame {
+      max-width: 1280px;
+      margin: 0 auto;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+    /* Sticky Numbered Section Eyebrow Bar */
+    .section-bar {
+      position: sticky;
+      top: 48px;
+      z-index: 30;
+      min-height: 40px;
+      padding: 8px 24px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .section-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    /* Hero Section */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 7fr 5fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-left {
+      position: relative;
+      padding: 56px 48px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 32px;
+      background:
+        radial-gradient(circle at 12% 15%, rgba(45, 129, 255, 0.09), transparent 52%),
+        var(--bg);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      align-self: flex-start;
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+    }
+    .hero-title {
+      font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+      color: var(--ink-strong);
+      margin: 18px 0 20px;
+    }
+    .hero-title .font-serif {
+      font-weight: 400;
+      color: var(--accent-ink);
+      padding-right: 4px;
+    }
+    .hero-lead {
+      font-size: clamp(1rem, 1.35vw, 1.14rem);
+      line-height: 1.65;
+      color: var(--muted);
+      max-width: 620px;
+    }
+    .hero-lead strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+    .hero-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-mono-primary {
+      height: 44px;
+      padding: 0 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--invert-bg);
+      color: var(--invert-fg);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .btn-mono-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .btn-mono-outline {
+      height: 44px;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line-strong);
+      background: var(--bg-raised);
+      color: var(--ink-strong);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-mono-outline:hover {
+      background: var(--invert-bg);
+      color: var(--invert-fg);
+      border-color: var(--invert-bg);
+    }
+    /* Right Hero Column: Interactive 13-App Dock */
+    .hero-right {
+      padding: 36px 32px;
+      background: var(--bg-sunken);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .dock-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .dock-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .dock-item {
+      padding: 10px 6px;
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      text-align: center;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .dock-item:hover {
+      transform: translateY(-3px);
+      border-color: var(--app);
+      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+    }
+    .dock-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .dock-icon-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .dock-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--ink-strong);
+      white-space: nowrap;
+    }
+    .dock-craft {
+      font-style: normal;
+      color: var(--app-light);
+    }
+    :root[data-theme="dark"] .dock-craft {
+      color: var(--app-dark);
+    }
+    .dock-footer {
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+    /* 4-Column Architectural Stat Bar */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--line);
+      gap: 1px;
+      border-bottom: 1px solid var(--line);
+    }
+    .stat-cell {
+      background: var(--bg);
+      padding: 22px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink-strong);
+      letter-spacing: -0.03em;
+    }
+    .stat-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent-ink);
+    }
+    .stat-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    /* Infinite Marquee Strip */
+    .marquee-wrap {
+      overflow: hidden;
+      background: var(--bg-sunken);
+      border-bottom: 1px solid var(--line);
+      padding: 11px 0;
+      user-select: none;
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: artcraft-marquee 42s linear infinite;
+    }
+    .marquee-wrap:hover .marquee-track {
+      animation-play-state: paused;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 22px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .marquee-item b {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+    .marquee-sq {
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    @keyframes artcraft-marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    /* Filter Controls inside Section 02 Bar */
+    .filter-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .filter-btn {
+      height: 28px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-btn:hover {
+      color: var(--ink-strong);
+      border-color: var(--line-strong);
+    }
+    .filter-btn.active {
+      background: var(--invert-bg);
+      color: var(--invert-fg);
+      border-color: var(--invert-bg);
+    }
+    .search-input {
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+      color: var(--ink-strong);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      outline: none;
+      width: 180px;
+      transition: border-color 0.15s ease;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+    /* 13-App Lineup Grid (1px Hairline Architecture) */
+    .lineup-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      background: var(--line);
+      gap: 1px;
+      border-bottom: 1px solid var(--line);
+    }
+    .app-card {
+      position: relative;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s ease;
+    }
+    .app-card:hover {
+      background: var(--bg-raised);
+    }
+    .card-accent-bar {
+      height: 2px;
+      width: 100%;
+      background: var(--app);
+      transform: scaleX(0.28);
+      transform-origin: left;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .app-card:hover .card-accent-bar {
+      transform: scaleX(1);
+    }
+    .card-hud {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card-hud-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .num-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 2px 6px;
+      background: var(--app);
+      color: #000000;
+    }
+    .card-role {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+    .card-equiv {
+      color: var(--muted);
+    }
+    /* 16:10 Self-Contained iPadOS Desktop Workspace Blueprint Preview */
+    .card-preview {
+      position: relative;
+      aspect-ratio: 16 / 9.2;
+      width: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 78% 28%, color-mix(in srgb, var(--app) 26%, transparent), transparent 62%),
+        linear-gradient(180deg, rgba(16, 17, 22, 0.96) 0%, rgba(10, 11, 14, 0.99) 100%);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .preview-menubar {
+      height: 26px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: rgba(242, 241, 238, 0.68);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .preview-menubar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .preview-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--app);
+      box-shadow: 0 0 8px var(--app);
+      flex-shrink: 0;
+    }
+    .preview-menus {
+      letter-spacing: 0.04em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preview-status {
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--app-dark);
+      padding: 2px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.35);
+      flex-shrink: 0;
+    }
+    .preview-canvas {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px 28px 96px;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .preview-blueprint {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      background: rgba(14, 15, 19, 0.68);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+    .app-card:hover .preview-blueprint {
+      border-color: var(--app);
+      transform: translateY(-2px);
+    }
+    .preview-spec-top {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.14em;
+      color: rgba(242, 241, 238, 0.5);
+      text-transform: uppercase;
+    }
+    .preview-watermark {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }
+    .preview-watermark span {
+      color: var(--app-dark);
+    }
+    .preview-spec-bot {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: rgba(242, 241, 238, 0.72);
+    }
+    .preview-dock-pill {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(24, 26, 32, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #f2f1ee;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+    /* Community Credit Notice Banner */
+    .credit-banner {
+      padding: 14px 24px;
+      background: rgba(45, 129, 255, 0.07);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+    .credit-banner strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+    .credit-banner a {
+      color: var(--accent-ink);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    /* Card Content Body */
+    .card-body {
+      padding: 22px 26px 26px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 16px;
+    }
+    .card-title-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 14px;
+      margin-top: -42px;
+      position: relative;
+      z-index: 2;
+    }
+    .card-icon-float {
+      width: 68px;
+      height: 68px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid var(--bg);
+      background: var(--bg-raised);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
+      flex-shrink: 0;
+    }
+    .card-icon-float img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-title-group {
+      flex: 1;
+      padding-bottom: 2px;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: var(--ink-strong);
+    }
+    .craft-accent {
+      color: var(--app-light);
+    }
+    :root[data-theme="dark"] .craft-accent {
+      color: var(--app-dark);
+    }
+    .card-cat-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-top: 3px;
+    }
+    .card-quick-arrow {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--muted);
+      transition: all 0.15s ease;
+    }
+    .app-card:hover .card-quick-arrow {
+      border-color: var(--app);
+      background: var(--app);
+      color: #000000;
+    }
+    .card-desc {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      flex: 1;
+    }
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      background: var(--bg-sunken);
+      color: var(--muted);
+    }
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 6px;
+    }
+    .btn-launch {
+      flex: 1;
+      height: 40px;
+      padding: 0 16px;
+      background: var(--invert-bg);
+      color: var(--invert-fg);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .btn-launch:hover {
+      background: var(--app);
+      color: #000000;
+    }
+    .btn-sub {
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--ink-strong);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .btn-sub:hover {
+      border-color: var(--app);
+      color: var(--app-light);
+      background: var(--bg-sunken);
+    }
+    :root[data-theme="dark"] .btn-sub:hover {
+      color: var(--app-dark);
+    }
+    /* Section 03: iPadOS Touch & Desktop Engine Grid */
+    .engine-intro {
+      padding: 44px 48px 36px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .engine-intro h2 {
+      font-size: clamp(1.85rem, 3.3vw, 2.75rem);
+      color: var(--ink-strong);
+      max-width: 680px;
+    }
+    .engine-intro p {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 440px;
+    }
+    .engine-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--line);
+      gap: 1px;
+      border-bottom: 1px solid var(--line);
+    }
+    .engine-card {
+      background: var(--bg);
+      padding: 28px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .engine-num {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--accent-ink);
+      text-transform: uppercase;
+    }
+    .engine-card h3 {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--ink-strong);
+      letter-spacing: -0.02em;
+    }
+    .engine-card p {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      flex: 1;
+    }
+    .engine-Spec {
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    /* Section 04: Installation & Auto-Update Blueprint */
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      background: var(--line);
+      gap: 1px;
+      border-bottom: 1px solid var(--line);
+    }
+    .install-col {
+      background: var(--bg);
+      padding: 38px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .install-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .install-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink-strong);
+    }
+    .step-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .step-item {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .step-idx {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 0;
+      text-align: center;
+      border: 1px solid var(--line-strong);
+      background: var(--bg-sunken);
+      color: var(--ink-strong);
+    }
+    .step-text {
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+    .step-text strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+    /* Architectural Footer */
+    .footer {
+      padding: 48px 40px 56px;
+      background: var(--bg-sunken);
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--line);
+    }
+    .footer-brand-col {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .footer-brand-col p {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 360px;
+    }
+    .footer-apps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px 16px;
+    }
+    .footer-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-strong);
+      padding: 4px 0;
+      transition: color 0.15s ease;
+    }
+    .footer-link span {
+      color: var(--faint);
+      font-size: 10px;
+    }
+    .footer-link:hover {
+      color: var(--accent-ink);
+    }
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .footer-bottom a {
+      color: var(--ink-strong);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    /* Responsive Breakpoints */
+    @media (max-width: 1080px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-left {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+        padding: 40px 28px;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .engine-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .install-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-top {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 780px) {
+      .nav-links {
+        display: none;
+      }
+      .lineup-grid {
+        grid-template-columns: 1fr;
+      }
+      .engine-grid {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-apps-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .engine-intro, .install-col, .footer {
+        padding: 28px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sticky Top HUD Bar -->
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <a href="#" class="brand">
+        <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
+          <line x1="6" y1="12" x2="6.01" y2="12"/>
+          <path d="M14.5 9.5l2.5 2.5-4.5 4.5H10v-2.5l4.5-4.5z"/>
+        </svg>
+        <span>Craft for iPadOS</span>
+        <span class="brand-badge">Community Port</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <a href="#lineup">01 / Lineup (13)</a>
+        <a href="#engine">02 / iPadOS Engine</a>
+        <a href="#install">03 / Install Guide</a>
+        <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">04 / Releases (.ipa)</a>
+      </nav>
+      <div class="nav-actions">
+        <button type="button" id="themeToggle" class="icon-btn" title="Switch Light / Dark Appearance">
+          <span id="themeIcon">☀</span>
+          <span id="themeLabel">Theme</span>
+        </button>
+        <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" class="icon-btn" title="GitHub Repository">
+          GitHub ↗
+        </a>
+        <a href="#lineup" class="nav-cta">Launch Apps ↓</a>
+      </div>
+    </div>
+  </header>
+  <main class="frame">
+    <!-- Prominent Open-Source Creator Credit & Community Port Disclaimer -->
+    <div class="credit-banner">
+      <div>
+        <strong>Unofficial Community Port by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">@Milanista86</a>:</strong>
+        Adapting the 13 open-source desktop applications created by <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> for fullscreen iPadOS use. All credit for the core engines &amp; icons belongs to <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">@storytold</a>.
+      </div>
+      <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" class="hud-label" style="color: var(--accent-ink);">Visit Official ArtCraft Site ↗</a>
+    </div>
+    <!-- Section 01: Hero & Interactive 13-App Dock -->
+    <div class="section-bar">
+      <div class="section-bar-left">
+        <span class="section-dot"></span>
+        <span class="hud-label">01 / Community iPadOS Adaptation</span>
+      </div>
+      <span class="hud-label">13 Open-Source Apps &middot; Upstream by @storytold &middot; iPadOS Layer by @Milanista86</span>
+    </div>
+    <section class="hero-grid">
+      <div class="hero-left">
+        <span class="tick tick-tl"></span>
+        <span class="tick tick-tr"></span>
+        <span class="tick tick-bl"></span>
+        <span class="tick tick-br"></span>
+        <div>
+          <div class="status-pill">
+            <span class="pulse-dot"></span>
+            <span class="hud-label" style="color: var(--ink-strong);">Unofficial Community Hub &middot; Auto-Synced Weekly from @storytold</span>
+          </div>
+          <h1 class="font-display hero-title">
+            Desktop creative &amp; office apps —<br>
+            <span class="font-serif">adapted</span> for iPadOS.
+          </h1>
+          <p class="hero-lead">
+            An open-source community port bringing all 13 Rust &amp; WebAssembly desktop applications by <strong><a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; text-underline-offset: 3px;">ArtCraft (@storytold)</a></strong> to your iPad. Enjoy <strong>100% desktop mouse, trackpad &amp; keyboard fidelity</strong> alongside our custom draggable Apple Pencil tool dock, Procreate-style multi-touch gestures, and native iPadOS Files integration.
+          </p>
+        </div>
+        <div class="hero-cta-row">
+          <a href="#lineup" class="btn-mono-primary">
+            <span>Explore All 13 Apps</span>
+            <span>↓</span>
+          </a>
+          <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" class="btn-mono-outline">
+            <span>↓ Download .IPA Suite</span>
+          </a>
+          <button type="button" id="copyHubBtn" class="btn-mono-outline">
+            <span id="copyHubText">Copy Hub Link</span>
+          </button>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="dock-header">
+          <span class="hud-label" style="color: var(--ink-strong);">Interactive App Dock (13)</span>
+          <span class="hud-label">Tap Icon to Jump ↓</span>
+        </div>
+        <div class="dock-grid">
+              <a href="#app-photocraft" class="dock-item" data-cat="creative" style="--app: #2f7bf5; --app-dark: #7fb0ff; --app-light: #1a5bc4;" title="Jump to PhotoCraft (Adobe Photoshop Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./photocraft/icon.png?v=4" alt="PhotoCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Photo<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-vectorcraft" class="dock-item" data-cat="creative" style="--app: #e8573f; --app-dark: #ff8a70; --app-light: #b83a24;" title="Jump to VectorCraft (Adobe Illustrator Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./vectorcraft/icon.png?v=4" alt="VectorCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Vector<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-designcraft" class="dock-item" data-cat="creative" style="--app: #7bb51c; --app-dark: #a6e04a; --app-light: #457008;" title="Jump to DesignCraft (Adobe InDesign Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./designcraft/icon.png?v=4" alt="DesignCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Design<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-lightcraft" class="dock-item" data-cat="creative" style="--app: #f2a516; --app-dark: #ffc14d; --app-light: #8a5800;" title="Jump to LightCraft (Adobe Lightroom Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./lightcraft/icon.png?v=4" alt="LightCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Light<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-filmcraft" class="dock-item" data-cat="creative" style="--app: #8b5cf6; --app-dark: #b69cff; --app-light: #6a3fd6;" title="Jump to FilmCraft (Adobe Premiere Pro Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./filmcraft/icon.png?v=4" alt="FilmCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Film<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-effectcraft" class="dock-item" data-cat="creative" style="--app: #e0368f; --app-dark: #ff7ab8; --app-light: #b0206c;" title="Jump to EffectCraft (Adobe After Effects Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./effectcraft/icon.png?v=4" alt="EffectCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Effect<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-figcraft" class="dock-item" data-cat="creative" style="--app: #02da96; --app-dark: #3fe6ae; --app-light: #017a54;" title="Jump to FigCraft (Figma Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./figcraft/icon.png?v=4" alt="FigCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Fig<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-wordcraft" class="dock-item" data-cat="office" style="--app: #4c6ef5; --app-dark: #8da2fb; --app-light: #253e99;" title="Jump to WordCraft (Microsoft Word Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./wordcraft/icon.png?v=4" alt="WordCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Word<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-gridcraft" class="dock-item" data-cat="office" style="--app: #1f9d55; --app-dark: #5ee089; --app-light: #136938;" title="Jump to GridCraft (Microsoft Excel Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./gridcraft/icon.png?v=4" alt="GridCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Grid<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-deckcraft" class="dock-item" data-cat="office" style="--app: #f26b1d; --app-dark: #ff9657; --app-light: #ad4306;" title="Jump to DeckCraft (Microsoft PowerPoint Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./deckcraft/icon.png?v=4" alt="DeckCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Deck<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-pdfcraft" class="dock-item" data-cat="office" style="--app: #e8204f; --app-dark: #f23a62; --app-light: #b70228;" title="Jump to PdfCraft (Adobe Acrobat Pro Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./pdfcraft/icon.png?v=4" alt="PdfCraft" loading="lazy">
+                </div>
+                <span class="dock-label">PDF<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-soundcraft" class="dock-item" data-cat="office" style="--app: #14a9c4; --app-dark: #52d1ea; --app-light: #0b6f82;" title="Jump to SoundCraft (Avid Pro Tools Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./soundcraft/icon.png?v=4" alt="SoundCraft" loading="lazy">
+                </div>
+                <span class="dock-label">Sound<em class="dock-craft">Craft</em></span>
+              </a>
+              <a href="#app-cadcraft" class="dock-item" data-cat="office" style="--app: #14a3c7; --app-dark: #4cc7e6; --app-light: #09596d;" title="Jump to CADCraft (AutoCAD Alternative)">
+                <div class="dock-icon-wrap">
+                  <img src="./cadcraft/icon.png?v=4" alt="CADCraft" loading="lazy">
+                </div>
+                <span class="dock-label">CAD<em class="dock-craft">Craft</em></span>
+              </a>
+        </div>
+        <div class="dock-footer">
+          <span>7 CREATIVE &amp; DESIGN</span>
+          <span>&bull;</span>
+          <span>6 OFFICE, AUDIO &amp; CAD</span>
+        </div>
+      </div>
+    </section>
+    <!-- 4-Column Architectural Stat Bar -->
+    <section class="stats-grid" aria-label="Suite Highlights">
+      <div class="stat-cell">
+        <div class="stat-num">13 Apps</div>
+        <div class="stat-title">Complete Desktop Suite</div>
+        <div class="stat-sub">Photo, Vector, Layout, RAW, Video, VFX, UI, Office, PDF, DAW &amp; CAD</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">100%</div>
+        <div class="stat-title">Desktop Mouse &amp; Keyboard</div>
+        <div class="stat-sub">Passive touch layer leaves Magic Keyboard, trackpad &amp; mice untouched</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">2 Modes</div>
+        <div class="stat-title">Cloud PWA + Native .IPA</div>
+        <div class="stat-sub">Install directly from Safari or sideload edge-to-edge native .ipa</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">$0 / Forever</div>
+        <div class="stat-title">Open Source &amp; Auto-Updated</div>
+        <div class="stat-sub">No subscriptions, no accounts, no telemetry &middot; MIT / Apache-2.0</div>
+      </div>
+    </section>
+    <!-- Infinite Scrolling Marquee Ticker -->
+    <div class="marquee-wrap" aria-hidden="true">
+      <div class="marquee-track">
+        <span class="marquee-item"><span class="marquee-sq"></span> <b>NATIVE IPADOS FILES SHARE SHEET</b></span>
+        <span class="marquee-item"><span class="marquee-sq"></span> PROCREATE-STYLE <b>2-FINGER UNDO &amp; 3-FINGER REDO</b></span>
+        <span class="marquee-item"><span class="marquee-sq"></span> DRAGGABLE FLOATING <b>TOUCH &amp; APPLE PENCIL DOCK (⚙️)</b></span>
+        <span class="marquee-item"><span class="marquee-sq"></span> <b>100% DESKTOP</b> MOUSE, TRACKPAD &amp; KEYBOARD FIDELITY</span>
+        <span class="marquee-item"><span class="marquee-sq"></span> PURE <b>RUST + WEBASSEMBLY</b> ENGINE</span>
+        <span class="marquee-item"><span class="marquee-sq"></span> <b>AUTO-UPDATED WEEKLY</b> VIA GITHUB ACTIONS</span>
+        <span class="marquee-item"><span class="marquee-sq"></span> <b>NATIVE IPADOS FILES SHARE SHEET</b></span>
+        <span class="marquee-item"><span class="marquee-sq"></span> PROCREATE-STYLE <b>2-FINGER UNDO &amp; 3-FINGER REDO</b></span>
+        <span class="marquee-item"><span class="marquee-sq"></span> DRAGGABLE FLOATING <b>TOUCH &amp; APPLE PENCIL DOCK (⚙️)</b></span>
+        <span class="marquee-item"><span class="marquee-sq"></span> <b>100% DESKTOP</b> MOUSE, TRACKPAD &amp; KEYBOARD FIDELITY</span>
+        <span class="marquee-item"><span class="marquee-sq"></span> PURE <b>RUST + WEBASSEMBLY</b> ENGINE</span>
+        <span class="marquee-item"><span class="marquee-sq"></span> <b>AUTO-UPDATED WEEKLY</b> VIA GITHUB ACTIONS</span>
+      </div>
+    </div>
+    <!-- Section 02: The Lineup -->
+    <div id="lineup" class="section-bar">
+      <div class="section-bar-left">
+        <span class="section-dot"></span>
+        <span class="hud-label">02 / The Lineup — All Thirteen Applications</span>
+      </div>
+      <div class="filter-controls">
+        <button type="button" class="filter-btn active" data-filter="all">All (13)</button>
+        <button type="button" class="filter-btn" data-filter="creative">Creative &amp; Design (7)</button>
+        <button type="button" class="filter-btn" data-filter="office">Office, Audio &amp; CAD (6)</button>
+        <input type="search" id="appSearch" class="search-input" placeholder="Search apps or formats...">
+      </div>
+    </div>
+    <section class="lineup-grid" aria-label="Applications Lineup">
+          <article id="app-photocraft" class="app-card" data-cat="creative" data-search="photocraft image editor adobe photoshop alternative layered raster photo editing, psd/psb support, adjustment layers, masks, retouching, and custom brushes. psd / psb raw adjustment layers brush engine" style="--app: #2f7bf5; --app-dark: #7fb0ff; --app-light: #1a5bc4;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">01</span>
+                <span class="hud-label card-role">Image Editor</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe Photoshop Alternative</span>
+            </div>
+            <a href="./photocraft/?v=4" class="card-preview" aria-label="Launch PhotoCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Image  Layer  Type  Select  Filter  View</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Photo<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./photocraft/icon.png?v=4" alt="PhotoCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./photocraft/?v=4">Photo<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./photocraft/?v=4" class="card-quick-arrow" title="Launch PhotoCraft">↗</a>
+              </div>
+              <p class="card-desc">Layered raster photo editing, PSD/PSB support, adjustment layers, masks, retouching, and custom brushes.</p>
+              <div class="card-tags">
+                <span class="tag">PSD / PSB</span><span class="tag">RAW</span><span class="tag">Adjustment Layers</span><span class="tag">Brush Engine</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./photocraft/?v=4">
+                  <span>Launch PhotoCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/PhotoCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/photocraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-vectorcraft" class="app-card" data-cat="creative" data-search="vectorcraft vector studio adobe illustrator alternative precision vector illustration, bezier pen workflows, boolean path operations, multi-artboard layouts, and svg/pdf export. svg / ai / eps bezier pen boolean ops cmyk & pantone" style="--app: #e8573f; --app-dark: #ff8a70; --app-light: #b83a24;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">02</span>
+                <span class="hud-label card-role">Vector Studio</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe Illustrator Alternative</span>
+            </div>
+            <a href="./vectorcraft/?v=4" class="card-preview" aria-label="Launch VectorCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Object  Type  Select  Effect  View  Window</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Vector<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./vectorcraft/icon.png?v=4" alt="VectorCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./vectorcraft/?v=4">Vector<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./vectorcraft/?v=4" class="card-quick-arrow" title="Launch VectorCraft">↗</a>
+              </div>
+              <p class="card-desc">Precision vector illustration, bezier pen workflows, boolean path operations, multi-artboard layouts, and SVG/PDF export.</p>
+              <div class="card-tags">
+                <span class="tag">SVG / AI / EPS</span><span class="tag">Bezier Pen</span><span class="tag">Boolean Ops</span><span class="tag">CMYK & Pantone</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./vectorcraft/?v=4">
+                  <span>Launch VectorCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/VectorCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/vectorcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-designcraft" class="app-card" data-cat="creative" data-search="designcraft page layout adobe indesign alternative multi-page desktop publishing, master pages, baseline typography grids, threaded text frames, and print-ready preflight. idml / pdf-x master pages threaded text cmyk print" style="--app: #7bb51c; --app-dark: #a6e04a; --app-light: #457008;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">03</span>
+                <span class="hud-label card-role">Page Layout</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe InDesign Alternative</span>
+            </div>
+            <a href="./designcraft/?v=4" class="card-preview" aria-label="Launch DesignCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Layout  Type  Object  Table  View  Window</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Design<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./designcraft/icon.png?v=4" alt="DesignCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./designcraft/?v=4">Design<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./designcraft/?v=4" class="card-quick-arrow" title="Launch DesignCraft">↗</a>
+              </div>
+              <p class="card-desc">Multi-page desktop publishing, master pages, baseline typography grids, threaded text frames, and print-ready preflight.</p>
+              <div class="card-tags">
+                <span class="tag">IDML / PDF-X</span><span class="tag">Master Pages</span><span class="tag">Threaded Text</span><span class="tag">CMYK Print</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./designcraft/?v=4">
+                  <span>Launch DesignCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/DesignCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/designcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-lightcraft" class="app-card" data-cat="creative" data-search="lightcraft raw developer adobe lightroom alternative non-destructive raw photo development, film-grade color grading, tone curves, local masking, and catalog management. cr3 / nef / arw 32-bit float luts & curves catalog" style="--app: #f2a516; --app-dark: #ffc14d; --app-light: #8a5800;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">04</span>
+                <span class="hud-label card-role">RAW Developer</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe Lightroom Alternative</span>
+            </div>
+            <a href="./lightcraft/?v=4" class="card-preview" aria-label="Launch LightCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Library  Photo  Develop  Metadata  View</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Light<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./lightcraft/icon.png?v=4" alt="LightCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./lightcraft/?v=4">Light<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./lightcraft/?v=4" class="card-quick-arrow" title="Launch LightCraft">↗</a>
+              </div>
+              <p class="card-desc">Non-destructive RAW photo development, film-grade color grading, tone curves, local masking, and catalog management.</p>
+              <div class="card-tags">
+                <span class="tag">CR3 / NEF / ARW</span><span class="tag">32-Bit Float</span><span class="tag">LUTs & Curves</span><span class="tag">Catalog</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./lightcraft/?v=4">
+                  <span>Launch LightCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/LightCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/lightcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-filmcraft" class="app-card" data-cat="creative" data-search="filmcraft video nle adobe premiere pro alternative nonlinear multi-track video editing, magnetic & ripple timeline trimming, node color grading, and real-time playback. 4k / prores multi-track nle color wheels audio mix" style="--app: #8b5cf6; --app-dark: #b69cff; --app-light: #6a3fd6;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">05</span>
+                <span class="hud-label card-role">Video NLE</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe Premiere Pro Alternative</span>
+            </div>
+            <a href="./filmcraft/?v=4" class="card-preview" aria-label="Launch FilmCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Clip  Sequence  Markers  Color  Audio  View</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Film<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./filmcraft/icon.png?v=4" alt="FilmCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./filmcraft/?v=4">Film<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./filmcraft/?v=4" class="card-quick-arrow" title="Launch FilmCraft">↗</a>
+              </div>
+              <p class="card-desc">Nonlinear multi-track video editing, magnetic & ripple timeline trimming, node color grading, and real-time playback.</p>
+              <div class="card-tags">
+                <span class="tag">4K / ProRes</span><span class="tag">Multi-Track NLE</span><span class="tag">Color Wheels</span><span class="tag">Audio Mix</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./filmcraft/?v=4">
+                  <span>Launch FilmCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/FilmCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/filmcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-effectcraft" class="app-card" data-cat="creative" data-search="effectcraft motion & vfx adobe after effects alternative keyframe motion graphics, hybrid layer and node compositing, particle emitters, camera tracking, and procedural vfx. graph editor node + layer 3d camera particles & shaders" style="--app: #e0368f; --app-dark: #ff7ab8; --app-light: #b0206c;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">06</span>
+                <span class="hud-label card-role">Motion & VFX</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe After Effects Alternative</span>
+            </div>
+            <a href="./effectcraft/?v=4" class="card-preview" aria-label="Launch EffectCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Composition  Layer  Effect  Animation  View</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Effect<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./effectcraft/icon.png?v=4" alt="EffectCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./effectcraft/?v=4">Effect<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./effectcraft/?v=4" class="card-quick-arrow" title="Launch EffectCraft">↗</a>
+              </div>
+              <p class="card-desc">Keyframe motion graphics, hybrid layer and node compositing, particle emitters, camera tracking, and procedural VFX.</p>
+              <div class="card-tags">
+                <span class="tag">Graph Editor</span><span class="tag">Node + Layer</span><span class="tag">3D Camera</span><span class="tag">Particles & Shaders</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./effectcraft/?v=4">
+                  <span>Launch EffectCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/EffectCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/effectcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-figcraft" class="app-card" data-cat="creative" data-search="figcraft ui / ux design figma alternative infinite-canvas interface design, auto-layout frames, variants & design tokens, vector networks, and interactive prototyping. auto-layout design tokens prototyping code inspect" style="--app: #02da96; --app-dark: #3fe6ae; --app-light: #017a54;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">07</span>
+                <span class="hud-label card-role">UI / UX Design</span>
+              </div>
+              <span class="hud-label card-equiv">Figma Alternative</span>
+            </div>
+            <a href="./figcraft/?v=4" class="card-preview" aria-label="Launch FigCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  View  Object  Text  Arrange  Vector  Plugins</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Fig<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./figcraft/icon.png?v=4" alt="FigCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./figcraft/?v=4">Fig<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Creative & Design</div>
+                </div>
+                <a href="./figcraft/?v=4" class="card-quick-arrow" title="Launch FigCraft">↗</a>
+              </div>
+              <p class="card-desc">Infinite-canvas interface design, auto-layout frames, variants & design tokens, vector networks, and interactive prototyping.</p>
+              <div class="card-tags">
+                <span class="tag">Auto-Layout</span><span class="tag">Design Tokens</span><span class="tag">Prototyping</span><span class="tag">Code Inspect</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./figcraft/?v=4">
+                  <span>Launch FigCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/FigCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/figcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-wordcraft" class="app-card" data-cat="office" data-search="wordcraft word processor microsoft word alternative full ribbon word processor with real-time paginated layout, paragraph styles, track changes, tables, and native docx/odt support. docx / odt track changes citations & toc print layout" style="--app: #4c6ef5; --app-dark: #8da2fb; --app-light: #253e99;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">08</span>
+                <span class="hud-label card-role">Word Processor</span>
+              </div>
+              <span class="hud-label card-equiv">Microsoft Word Alternative</span>
+            </div>
+            <a href="./wordcraft/?v=4" class="card-preview" aria-label="Launch WordCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Home  Insert  Design  Layout  References  Review  View</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Word<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./wordcraft/icon.png?v=4" alt="WordCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./wordcraft/?v=4">Word<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Office, Audio & Engineering</div>
+                </div>
+                <a href="./wordcraft/?v=4" class="card-quick-arrow" title="Launch WordCraft">↗</a>
+              </div>
+              <p class="card-desc">Full Ribbon word processor with real-time paginated layout, paragraph styles, track changes, tables, and native DOCX/ODT support.</p>
+              <div class="card-tags">
+                <span class="tag">DOCX / ODT</span><span class="tag">Track Changes</span><span class="tag">Citations & TOC</span><span class="tag">Print Layout</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./wordcraft/?v=4">
+                  <span>Launch WordCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/WordCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/wordcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-gridcraft" class="app-card" data-cat="office" data-search="gridcraft spreadsheet microsoft excel alternative high-speed spreadsheet engine with 400+ formulas, pivot tables, financial models, conditional formatting, and xlsx/csv support. xlsx / csv 400+ formulas pivot tables charts" style="--app: #1f9d55; --app-dark: #5ee089; --app-light: #136938;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">09</span>
+                <span class="hud-label card-role">Spreadsheet</span>
+              </div>
+              <span class="hud-label card-equiv">Microsoft Excel Alternative</span>
+            </div>
+            <a href="./gridcraft/?v=4" class="card-preview" aria-label="Launch GridCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Home  Insert  Page Layout  Formulas  Data  Review  View</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Grid<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./gridcraft/icon.png?v=4" alt="GridCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./gridcraft/?v=4">Grid<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Office, Audio & Engineering</div>
+                </div>
+                <a href="./gridcraft/?v=4" class="card-quick-arrow" title="Launch GridCraft">↗</a>
+              </div>
+              <p class="card-desc">High-speed spreadsheet engine with 400+ formulas, pivot tables, financial models, conditional formatting, and XLSX/CSV support.</p>
+              <div class="card-tags">
+                <span class="tag">XLSX / CSV</span><span class="tag">400+ Formulas</span><span class="tag">Pivot Tables</span><span class="tag">Charts</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./gridcraft/?v=4">
+                  <span>Launch GridCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/GridCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/gridcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-deckcraft" class="app-card" data-cat="office" data-search="deckcraft presentations microsoft powerpoint alternative slide deck authoring, master slide templates, smart object snapping, keyframe transitions, speaker view, and pptx support. pptx / pdf master slides animations presenter view" style="--app: #f26b1d; --app-dark: #ff9657; --app-light: #ad4306;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">10</span>
+                <span class="hud-label card-role">Presentations</span>
+              </div>
+              <span class="hud-label card-equiv">Microsoft PowerPoint Alternative</span>
+            </div>
+            <a href="./deckcraft/?v=4" class="card-preview" aria-label="Launch DeckCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Home  Insert  Design  Transitions  Animations  Slide Show</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Deck<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./deckcraft/icon.png?v=4" alt="DeckCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./deckcraft/?v=4">Deck<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Office, Audio & Engineering</div>
+                </div>
+                <a href="./deckcraft/?v=4" class="card-quick-arrow" title="Launch DeckCraft">↗</a>
+              </div>
+              <p class="card-desc">Slide deck authoring, master slide templates, smart object snapping, keyframe transitions, speaker view, and PPTX support.</p>
+              <div class="card-tags">
+                <span class="tag">PPTX / PDF</span><span class="tag">Master Slides</span><span class="tag">Animations</span><span class="tag">Presenter View</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./deckcraft/?v=4">
+                  <span>Launch DeckCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/DeckCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/deckcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-pdfcraft" class="app-card" data-cat="office" data-search="pdfcraft pdf workbench adobe acrobat pro alternative direct pdf text reflow, page organizer, merger/splitter, ocr recognition, cryptographic redaction, and interactive forms. pdf edit & ocr merge & split redaction forms & sign" style="--app: #e8204f; --app-dark: #f23a62; --app-light: #b70228;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">11</span>
+                <span class="hud-label card-role">PDF Workbench</span>
+              </div>
+              <span class="hud-label card-equiv">Adobe Acrobat Pro Alternative</span>
+            </div>
+            <a href="./pdfcraft/?v=4" class="card-preview" aria-label="Launch PdfCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  View  Document  Pages  Forms  Protect  Comment</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">PDF<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./pdfcraft/icon.png?v=4" alt="PdfCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./pdfcraft/?v=4">PDF<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Office, Audio & Engineering</div>
+                </div>
+                <a href="./pdfcraft/?v=4" class="card-quick-arrow" title="Launch PdfCraft">↗</a>
+              </div>
+              <p class="card-desc">Direct PDF text reflow, page organizer, merger/splitter, OCR recognition, cryptographic redaction, and interactive forms.</p>
+              <div class="card-tags">
+                <span class="tag">PDF Edit & OCR</span><span class="tag">Merge & Split</span><span class="tag">Redaction</span><span class="tag">Forms & Sign</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./pdfcraft/?v=4">
+                  <span>Launch PdfCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/PdfCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/pdfcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-soundcraft" class="app-card" data-cat="office" data-search="soundcraft digital audio avid pro tools alternative digital audio workstation (daw) for multitrack recording, non-destructive clip editing, piano-roll midi, mixing, and mastering. multitrack daw midi & synths fx rack wav / flac" style="--app: #14a9c4; --app-dark: #52d1ea; --app-light: #0b6f82;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">12</span>
+                <span class="hud-label card-role">Digital Audio</span>
+              </div>
+              <span class="hud-label card-equiv">Avid Pro Tools Alternative</span>
+            </div>
+            <a href="./soundcraft/?v=4" class="card-preview" aria-label="Launch SoundCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  Track  Clip  Event  AudioSuite  Mix  Window</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">Sound<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./soundcraft/icon.png?v=4" alt="SoundCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./soundcraft/?v=4">Sound<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Office, Audio & Engineering</div>
+                </div>
+                <a href="./soundcraft/?v=4" class="card-quick-arrow" title="Launch SoundCraft">↗</a>
+              </div>
+              <p class="card-desc">Digital audio workstation (DAW) for multitrack recording, non-destructive clip editing, piano-roll MIDI, mixing, and mastering.</p>
+              <div class="card-tags">
+                <span class="tag">Multitrack DAW</span><span class="tag">MIDI & Synths</span><span class="tag">FX Rack</span><span class="tag">WAV / FLAC</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./soundcraft/?v=4">
+                  <span>Launch SoundCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/SoundCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/soundcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+          <article id="app-cadcraft" class="app-card" data-cat="office" data-search="cadcraft 2d / 3d cad autocad alternative precision 2d drafting and parametric 3d solid modeling, geometric constraints, associative dimensioning, and step/dxf/dwg workflows. dxf / dwg / step 2d drafting 3d b-rep solids dimensions" style="--app: #14a3c7; --app-dark: #4cc7e6; --app-light: #09596d;">
+            <div class="card-accent-bar"></div>
+            <div class="card-hud">
+              <div class="card-hud-left">
+                <span class="num-badge">13</span>
+                <span class="hud-label card-role">2D / 3D CAD</span>
+              </div>
+              <span class="hud-label card-equiv">AutoCAD Alternative</span>
+            </div>
+            <a href="./cadcraft/?v=4" class="card-preview" aria-label="Launch CADCraft">
+              <div class="preview-menubar">
+                <div class="preview-menubar-left">
+                  <span class="preview-dot"></span>
+                  <span class="preview-menus">File  Edit  View  Draw  Dimension  Modify  Parametric  Solid</span>
+                </div>
+                <span class="preview-status">iPadOS Fullscreen</span>
+              </div>
+              <div class="preview-canvas">
+                <div class="preview-blueprint">
+                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
+                  <div class="preview-watermark">CAD<span>Craft</span></div>
+                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
+                </div>
+                <div class="preview-dock-pill">⚙️ Touch Dock</div>
+              </div>
+            </a>
+            <div class="card-body">
+              <div class="card-title-row">
+                <div class="card-icon-float">
+                  <img src="./cadcraft/icon.png?v=4" alt="CADCraft icon" loading="lazy">
+                </div>
+                <div class="card-title-group">
+                  <h3 class="card-title">
+                    <a href="./cadcraft/?v=4">CAD<span class="craft-accent">Craft</span></a>
+                  </h3>
+                  <div class="card-cat-sub">Office, Audio & Engineering</div>
+                </div>
+                <a href="./cadcraft/?v=4" class="card-quick-arrow" title="Launch CADCraft">↗</a>
+              </div>
+              <p class="card-desc">Precision 2D drafting and parametric 3D solid modeling, geometric constraints, associative dimensioning, and STEP/DXF/DWG workflows.</p>
+              <div class="card-tags">
+                <span class="tag">DXF / DWG / STEP</span><span class="tag">2D Drafting</span><span class="tag">3D B-Rep Solids</span><span class="tag">Dimensions</span>
+              </div>
+              <div class="card-actions">
+                <a class="btn-launch" href="./cadcraft/?v=4">
+                  <span>Launch CADCraft</span>
+                  <span class="arrow">↗</span>
+                </a>
+                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/CADCraft-iPad.ipa" title="Download Native iPadOS .ipa Installer">
+                  ↓ .IPA
+                </a>
+                <a class="btn-sub" href="https://github.com/storytold/cadcraft" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
+                  SRC ↗
+                </a>
+              </div>
+            </div>
+          </article>
+    </section>
+    <!-- Section 03: iPadOS Touch & Desktop Engine -->
+    <div id="engine" class="section-bar">
+      <div class="section-bar-left">
+        <span class="section-dot"></span>
+        <span class="hud-label">03 / iPadOS Touch &amp; Desktop Architecture</span>
+      </div>
+      <span class="hud-label">Zero Interference with Mouse, Trackpad &amp; Physical Keyboard</span>
+    </div>
+    <div class="engine-intro">
+      <h2 class="font-display">
+        Built for <span class="font-serif">touch</span> when you hold it.<br>
+        Pure <span class="font-serif">desktop</span> when you dock it.
+      </h2>
+      <p>
+        Every iPadOS upgrade runs inside a passive overlay layer. When you attach a Magic Keyboard, external mouse, or trackpad, all native cursor events, hover states, right-clicks, and keyboard shortcuts work identically to macOS and Windows.
+      </p>
+    </div>
+    <section class="engine-grid">
+      <div class="engine-card">
+        <span class="engine-num">01 / Floating Dock (⚙️)</span>
+        <h3>Draggable Tool Pill</h3>
+        <p>
+          Press and drag the subtle <strong>⚙️</strong> button anywhere along the screen edges—each app remembers your preferred spot. Tap to open quick buttons for <strong>↩️ Undo</strong>, <strong>↪️ Redo</strong>, <strong>⌫ Delete</strong>, <strong>Right-Click</strong>, <strong>⌨️ Keyboard</strong>, and <strong>🔄 Instant Cloud Reload</strong>.
+        </p>
+        <div class="engine-Spec">Position Saved in LocalStorage</div>
+      </div>
+      <div class="engine-card">
+        <span class="engine-num">02 / Procreate Gestures</span>
+        <h3>Multi-Touch Shortcuts</h3>
+        <p>
+          Work without a physical keyboard effortlessly: <strong>Two-finger quick tap</strong> triggers Undo (<code>Ctrl+Z</code>), <strong>Three-finger quick tap</strong> triggers Redo (<code>Ctrl+Y</code>), and <strong>Two-finger pinch</strong> smoothly zooms the canvas in or out.
+        </p>
+        <div class="engine-Spec">100% Passive Touch Listeners</div>
+      </div>
+      <div class="engine-card">
+        <span class="engine-num">03 / Native Files Bridge</span>
+        <h3>Save to iPadOS Files</h3>
+        <p>
+          Exporting a PSD, SVG, DOCX, XLSX, PDF, WAV, or DXF automatically invokes the native <strong>iPadOS Share &amp; Save to Files sheet</strong> so you can save directly to iCloud Drive, On My iPad, or AirDrop, backed by persistent browser storage.
+        </p>
+        <div class="engine-Spec">Web Share Level 2 + Storage Lock</div>
+      </div>
+      <div class="engine-card">
+        <span class="engine-num">04 / Status Bar Layout</span>
+        <h3>Precision Top Menu Offset</h3>
+        <p>
+          Precision-tuned <code>18px</code> top safe-area offset in Safari Home Screen mode keeps the iPadOS clock and battery bar from overlapping the top menu bar (<code>File Edit Image Layer...</code>), or <code>0px</code> edge-to-edge in the native <code>.ipa</code>.
+        </p>
+        <div class="engine-Spec">Auto-Detected Standalone Mode</div>
+      </div>
+    </section>
+    <!-- Section 04: Installation & Auto-Update Guide -->
+    <div id="install" class="section-bar">
+      <div class="section-bar-left">
+        <span class="section-dot"></span>
+        <span class="hud-label">04 / Installation &amp; Auto-Update Guide</span>
+      </div>
+      <span class="hud-label">Choose Cloud Web App (No PC) or Native .IPA Sideload</span>
+    </div>
+    <section class="install-grid">
+      <div class="install-col">
+        <div class="install-head">
+          <div class="install-title">Option A — Cloud Web App (Recommended)</div>
+          <span class="brand-badge">No PC Required</span>
+        </div>
+        <ol class="step-list">
+          <li class="step-item">
+            <span class="step-idx">01</span>
+            <div class="step-text">Open this page in <strong>Safari</strong> on your iPad, iPad Air, iPad mini, or iPad Pro.</div>
+          </li>
+          <li class="step-item">
+            <span class="step-idx">02</span>
+            <div class="step-text">Tap <strong>Launch</strong> on any of the 13 applications above and wait a moment for the workspace to appear.</div>
+          </li>
+          <li class="step-item">
+            <span class="step-idx">03</span>
+            <div class="step-text">Tap the Safari <strong>Share</strong> button (square with upward arrow) and select <strong>Add to Home Screen</strong>.</div>
+          </li>
+          <li class="step-item">
+            <span class="step-idx">04</span>
+            <div class="step-text"><strong>Automatic Updates:</strong> Our GitHub Actions bot checks <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">@storytold</a> every Sunday at 03:00 UTC. Tap <strong>⚙️ &rarr; 🔄</strong> inside any app to pull the newest build immediately.</div>
+          </li>
+        </ol>
+      </div>
+      <div class="install-col">
+        <div class="install-head">
+          <div class="install-title">Option B — Native .IPA Sideload</div>
+          <span class="brand-badge">Zero Status Bar &middot; Offline</span>
+        </div>
+        <ol class="step-list">
+          <li class="step-item">
+            <span class="step-idx">01</span>
+            <div class="step-text">Tap <strong>&darr; .IPA</strong> on any app card above (or visit <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">GitHub Releases</a>) to download <code>&lt;AppName&gt;-iPad.ipa</code>.</div>
+          </li>
+          <li class="step-item">
+            <span class="step-idx">02</span>
+            <div class="step-text">Import and sign the <code>.ipa</code> directly on your iPad using <strong>Feather</strong>, <strong>ESign</strong>, <strong>GBox</strong>, <strong>SideStore</strong>, or <strong>Sideloadly</strong>.</div>
+          </li>
+          <li class="step-item">
+            <span class="step-idx">03</span>
+            <div class="step-text">Enjoy <strong>true edge-to-edge fullscreen</strong> with the iPadOS Status Bar &amp; Home Indicator hidden and 100% offline WebAssembly execution.</div>
+          </li>
+          <li class="step-item">
+            <span class="step-idx">04</span>
+            <div class="step-text">Whenever upstream releases a new version, run the <strong>Build All 13 Native iPadOS (.ipa) Apps</strong> workflow in GitHub Actions to generate fresh <code>.ipa</code> installers.</div>
+          </li>
+        </ol>
+      </div>
+    </section>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-top">
+        <div class="footer-brand-col">
+          <div class="brand">
+            <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
+              <line x1="6" y1="12" x2="6.01" y2="12"/>
+              <path d="M14.5 9.5l2.5 2.5-4.5 4.5H10v-2.5l4.5-4.5z"/>
+            </svg>
+            <span>Craft for iPadOS (Community Hub)</span>
+          </div>
+          <p>
+            Unofficial, non-commercial community iPadOS adaptation maintained by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">@Milanista86</a>. All 13 core Rust &amp; WebAssembly applications and icons are created by and copyright <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">ArtCraft (@storytold)</a> under MIT / Apache-2.0 licenses.
+          </p>
+        </div>
+        <div class="footer-apps-grid">
+            <a href="./photocraft/?v=4" class="footer-link">PhotoCraft <span>(Image Editor)</span></a>
+            <a href="./vectorcraft/?v=4" class="footer-link">VectorCraft <span>(Vector Studio)</span></a>
+            <a href="./designcraft/?v=4" class="footer-link">DesignCraft <span>(Page Layout)</span></a>
+            <a href="./lightcraft/?v=4" class="footer-link">LightCraft <span>(RAW Developer)</span></a>
+            <a href="./filmcraft/?v=4" class="footer-link">FilmCraft <span>(Video NLE)</span></a>
+            <a href="./effectcraft/?v=4" class="footer-link">EffectCraft <span>(Motion & VFX)</span></a>
+            <a href="./figcraft/?v=4" class="footer-link">FigCraft <span>(UI / UX Design)</span></a>
+            <a href="./wordcraft/?v=4" class="footer-link">WordCraft <span>(Word Processor)</span></a>
+            <a href="./gridcraft/?v=4" class="footer-link">GridCraft <span>(Spreadsheet)</span></a>
+            <a href="./deckcraft/?v=4" class="footer-link">DeckCraft <span>(Presentations)</span></a>
+            <a href="./pdfcraft/?v=4" class="footer-link">PdfCraft <span>(PDF Workbench)</span></a>
+            <a href="./soundcraft/?v=4" class="footer-link">SoundCraft <span>(Digital Audio)</span></a>
+            <a href="./cadcraft/?v=4" class="footer-link">CADCraft <span>(2D / 3D CAD)</span></a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>
+          Upstream Engines &amp; Icons &copy; <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> &middot; MIT / Apache-2.0 License
+        </div>
+        <div>
+          <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">GitHub Repo</a> &middot;
+          <a href="https://github.com/Milanista86/craft-ipad-apps/releases" target="_blank" rel="noopener noreferrer">Native .IPA Releases</a> &middot;
+          <a href="https://getartcraft.com/apps" target="_blank" rel="noopener noreferrer">Official ArtCraft Website</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+  <script>
+    (function() {
+      // 1. Theme Toggle (Dark / Light)
+      var root = document.documentElement;
+      var toggleBtn = document.getElementById('themeToggle');
+      var themeIcon = document.getElementById('themeIcon');
+      var themeLabel = document.getElementById('themeLabel');
+      function syncThemeUI() {
+        var current = root.getAttribute('data-theme') || 'dark';
+        if (current === 'dark') {
+          themeIcon.textContent = '☀';
+          themeLabel.textContent = 'Light';
+        } else {
+          themeIcon.textContent = '☾';
+          themeLabel.textContent = 'Dark';
+        }
+      }
+      syncThemeUI();
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          var current = root.getAttribute('data-theme') || 'dark';
+          var next = current === 'dark' ? 'light' : 'dark';
+          root.setAttribute('data-theme', next);
+          try { localStorage.setItem('artcraft_ipad_theme', next); } catch (e) {}
+          syncThemeUI();
+        });
+      }
+      // 2. Copy Hub Link Button
+      var copyBtn = document.getElementById('copyHubBtn');
+      var copyText = document.getElementById('copyHubText');
+      if (copyBtn && copyText) {
+        copyBtn.addEventListener('click', function() {
+          var url = window.location.href.split('#')[0];
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(function() {
+              copyText.textContent = '✓ Copied Link!';
+              setTimeout(function() { copyText.textContent = 'Copy Hub Link'; }, 1800);
+            });
+          }
+        });
+      }
+      // 3. Category Filter & Live Search
+      var filterBtns = document.querySelectorAll('.filter-btn');
+      var searchInput = document.getElementById('appSearch');
+      var cards = document.querySelectorAll('.app-card');
+      var activeCat = 'all';
+      function applyFilter() {
+        var q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        cards.forEach(function(card) {
+          var catMatch = (activeCat === 'all') || (card.getAttribute('data-cat') === activeCat);
+          var searchBlob = card.getAttribute('data-search') || '';
+          var searchMatch = !q || searchBlob.indexOf(q) !== -1;
+          card.style.display = (catMatch && searchMatch) ? '' : 'none';
+        });
+      }
+      filterBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          activeCat = btn.getAttribute('data-filter') || 'all';
+          applyFilter();
+        });
+      });
+      if (searchInput) {
+        searchInput.addEventListener('input', applyFilter);
+      }
+    })();
+  </script>
+</body>
+</html>
