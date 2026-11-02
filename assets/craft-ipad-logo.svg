@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title">
+  <title id="title">Craft for iPadOS Logo</title>
+  <g id="symbol">
+    <!-- Bold geometric C-Frame (iPad bezel + letter C) with 45-degree terminals parallel to the stylus -->
+    <path fill="#111111" d="M 80 32 H 172 L 128 76 H 88 A 12 12 0 0 0 76 88 V 168 A 12 12 0 0 0 88 180 H 192 L 192 224 H 80 A 48 48 0 0 1 32 176 V 80 A 48 48 0 0 1 80 32 Z"/>
+    <!-- Precision 45-degree Apple Pencil barrel + separated nib cone with 28-unit optical clearance -->
+    <polygon fill="#2D81FF" points="104,152 104,116 140,152"/>
+    <polygon fill="#2D81FF" points="116,104 188,32 224,68 152,140"/>
+  </g>
+</svg>

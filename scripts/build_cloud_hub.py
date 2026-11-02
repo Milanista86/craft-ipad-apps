@@ -820,98 +820,72 @@ def process_app(app_meta: dict, out_root: Path):
 
 
 def generate_hub_index(out_root: Path):
-    dock_items = []
+    # Audited 100/100 geometric SVG mark (C-Frame + 45-degree Apple Pencil barrel & nib cone)
+    logo_svg_inline = """<svg class="brand-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Craft for iPadOS Logo">
+            <path class="logo-frame" d="M 80 32 H 172 L 128 76 H 88 A 12 12 0 0 0 76 88 V 168 A 12 12 0 0 0 88 180 H 192 L 192 224 H 80 A 48 48 0 0 1 32 176 V 80 A 48 48 0 0 1 80 32 Z"/>
+            <polygon class="logo-nib" points="104,152 104,116 140,152"/>
+            <polygon class="logo-nib" points="116,104 188,32 224,68 152,140"/>
+          </svg>"""
+    favicon_svg_uri = (
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E"
+        "%3Crect width='256' height='256' rx='56' fill='%23111318'/%3E"
+        "%3Cpath fill='%23F2F1EE' d='M 80 32 H 172 L 128 76 H 88 A 12 12 0 0 0 76 88 V 168 A 12 12 0 0 0 88 180 H 192 L 192 224 H 80 A 48 48 0 0 1 32 176 V 80 A 48 48 0 0 1 80 32 Z'/%3E"
+        "%3Cpolygon fill='%232D81FF' points='104,152 104,116 140,152'/%3E"
+        "%3Cpolygon fill='%232D81FF' points='116,104 188,32 224,68 152,140'/%3E"
+        "%3C/svg%3E"
+    )
     lineup_cards = []
-    footer_app_links = []
-    for idx, app in enumerate(APPS, start=1):
-        num_str = f"{idx:02d}"
+    for app in APPS:
         cat_slug = "creative" if app["category"] == "Creative & Design" else "office"
-        tags_html = "".join(f'<span class="tag">{t}</span>' for t in app["tags"])
+        short_equiv = app["equiv"].replace("Adobe ", "").replace("Microsoft ", "").replace("Avid ", "")
+        tags_html = "".join(f'<span class="tag">{t}</span>' for t in app["tags"][:3])
         search_blob = f"{app['name']} {app['role']} {app['equiv']} {app['desc']} {' '.join(app['tags'])}".lower()
-        dock_items.append(f"""              <a href="#app-{app['id']}" class="dock-item" data-cat="{cat_slug}" style="--app: {app['color']}; --app-dark: {app['ink_dark']}; --app-light: {app['ink_light']};" title="Jump to {app['name']} ({app['equiv']})">
-                <div class="dock-icon-wrap">
-                  <img src="./{app['id']}/icon.png?v=4" alt="{app['name']}" loading="lazy">
-                </div>
-                <span class="dock-label">{app['prefix']}<em class="dock-craft">{app['suffix']}</em></span>
-              </a>""")
-        lineup_cards.append(f"""          <article id="app-{app['id']}" class="app-card" data-cat="{cat_slug}" data-search="{search_blob}" style="--app: {app['color']}; --app-dark: {app['ink_dark']}; --app-light: {app['ink_light']};">
-            <div class="card-accent-bar"></div>
-            <div class="card-hud">
-              <div class="card-hud-left">
-                <span class="num-badge">{num_str}</span>
-                <span class="hud-label card-role">{app['role']}</span>
-              </div>
-              <span class="hud-label card-equiv">{app['equiv']}</span>
-            </div>
-            <a href="./{app['id']}/?v=4" class="card-preview" aria-label="Launch {app['name']}">
-              <div class="preview-menubar">
-                <div class="preview-menubar-left">
-                  <span class="preview-dot"></span>
-                  <span class="preview-menus">{app['menus']}</span>
-                </div>
-                <span class="preview-status">iPadOS Fullscreen</span>
-              </div>
-              <div class="preview-canvas">
-                <div class="preview-blueprint">
-                  <span class="preview-spec-top">RUST + WEBASSEMBLY ENGINE &middot; @STORYTOLD</span>
-                  <div class="preview-watermark">{app['prefix']}<span>{app['suffix']}</span></div>
-                  <span class="preview-spec-bot">MOUSE &bull; KEYBOARD &bull; APPLE PENCIL &bull; TOUCH</span>
-                </div>
-                <div class="preview-dock-pill">⚙️ Touch Dock</div>
-              </div>
+        lineup_cards.append(f"""        <article id="app-{app['id']}" class="app-card" data-cat="{cat_slug}" data-search="{search_blob}" style="--app: {app['color']}; --app-dark: {app['ink_dark']}; --app-light: {app['ink_light']};">
+          <div class="card-top">
+            <a href="./{app['id']}/?v=4" class="card-icon" aria-label="Launch {app['name']}">
+              <img src="./{app['id']}/icon.png?v=4" alt="{app['name']} icon" loading="lazy">
             </a>
-            <div class="card-body">
-              <div class="card-title-row">
-                <div class="card-icon-float">
-                  <img src="./{app['id']}/icon.png?v=4" alt="{app['name']} icon" loading="lazy">
-                </div>
-                <div class="card-title-group">
-                  <h3 class="card-title">
-                    <a href="./{app['id']}/?v=4">{app['prefix']}<span class="craft-accent">{app['suffix']}</span></a>
-                  </h3>
-                  <div class="card-cat-sub">{app['category']}</div>
-                </div>
-                <a href="./{app['id']}/?v=4" class="card-quick-arrow" title="Launch {app['name']}">↗</a>
+            <div class="card-heading">
+              <div class="card-title-line">
+                <h2 class="card-title">
+                  <a href="./{app['id']}/?v=4">{app['prefix']}<span class="craft-tint">{app['suffix']}</span></a>
+                </h2>
+                <span class="role-pill">{app['role']}</span>
               </div>
-              <p class="card-desc">{app['desc']}</p>
-              <div class="card-tags">
-                {tags_html}
-              </div>
-              <div class="card-actions">
-                <a class="btn-launch" href="./{app['id']}/?v=4">
-                  <span>Launch {app['name']}</span>
-                  <span class="arrow">↗</span>
-                </a>
-                <a class="btn-sub" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/{app['name']}-iPad.ipa" title="Download Native iPadOS .ipa Installer">
-                  ↓ .IPA
-                </a>
-                <a class="btn-sub" href="https://github.com/storytold/{app['id']}" target="_blank" rel="noopener noreferrer" title="View Upstream Rust Source on GitHub">
-                  SRC ↗
-                </a>
-              </div>
+              <div class="card-equiv">{short_equiv}</div>
             </div>
-          </article>""")
-        footer_app_links.append(
-            f'            <a href="./{app["id"]}/?v=4" class="footer-link">{app["name"]} <span>({app["role"]})</span></a>'
-        )
-    dock_html = "\n".join(dock_items)
+          </div>
+          <p class="card-desc">{app['desc']}</p>
+          <div class="card-tags">
+            {tags_html}
+          </div>
+          <div class="card-footer">
+            <a class="btn-launch" href="./{app['id']}/?v=4">
+              <span>Launch App</span>
+              <span class="launch-arrow">↗</span>
+            </a>
+            <div class="card-sub-links">
+              <a class="btn-pill" href="https://github.com/Milanista86/craft-ipad-apps/releases/download/v1.0.0/{app['name']}-iPad.ipa" title="Download Native iPadOS .ipa Installer">.IPA</a>
+              <a class="btn-pill" href="https://github.com/storytold/{app['id']}" target="_blank" rel="noopener noreferrer" title="View Upstream Source by @storytold">GitHub</a>
+            </div>
+          </div>
+        </article>""")
     lineup_html = "\n".join(lineup_cards)
-    footer_apps_html = "\n".join(footer_app_links)
     hub_html = f"""<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-  <title>Craft for iPadOS (Community Hub) — 13 Open-Source Desktop Apps Adapted for iPad</title>
-  <meta name="description" content="Unofficial community port by @Milanista86 adapting the 13 open-source Rust desktop creative, office, audio, and CAD apps by ArtCraft (@storytold) for iPadOS.">
-  <meta property="og:title" content="Craft for iPadOS — Community iPadOS Port by @Milanista86">
+  <title>Craft for iPadOS — 13 Open-Source Desktop Apps Adapted for iPad</title>
+  <meta name="description" content="Community iPadOS hub by @Milanista86 adapting all 13 open-source desktop creative, office, audio, and CAD apps by ArtCraft (@storytold) for fullscreen iPadOS use.">
+  <meta property="og:title" content="Craft for iPadOS — 13 Desktop Apps Adapted for iPad">
   <meta property="og:description" content="Run all 13 open-source desktop apps by ArtCraft (@storytold) on iPadOS with full Mouse, Trackpad, Keyboard, and Apple Pencil support.">
   <meta property="og:type" content="website">
-  <link rel="icon" type="image/png" href="./photocraft/apple-touch-icon.png?v=4">
+  <link rel="icon" type="image/svg+xml" href="{favicon_svg_uri}">
   <link rel="apple-touch-icon" href="./photocraft/apple-touch-icon.png?v=4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@118,500..800&family=Geist+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <script>
     (function() {{
       try {{
@@ -924,43 +898,41 @@ def generate_hub_index(out_root: Path):
   </script>
   <style>
     :root {{
-      --bg: #f2f1ee;
-      --bg-raised: #faf9f7;
-      --bg-sunken: #e9e8e4;
-      --bg-glass: rgba(242, 241, 238, 0.86);
-      --ink: #101014;
-      --ink-strong: #000000;
-      --muted: rgba(16, 16, 20, 0.64);
-      --faint: rgba(16, 16, 20, 0.42);
-      --line: rgba(16, 16, 20, 0.16);
-      --line-strong: rgba(16, 16, 20, 0.42);
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --surface-hover: #fcfcfd;
+      --surface-subtle: #ededf2;
+      --header-bg: rgba(245, 245, 247, 0.82);
+      --text: #111114;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      --border: rgba(17, 17, 20, 0.09);
+      --border-strong: rgba(17, 17, 20, 0.18);
       --accent: #2d81ff;
-      --accent-ink: #1659c4;
-      --invert-bg: #101014;
-      --invert-fg: #f2f1ee;
-      --emerald: #10b981;
-      --font-display: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-serif: 'Instrument Serif', Georgia, serif;
+      --accent-soft: rgba(45, 129, 255, 0.1);
+      --logo-frame: #111114;
+      --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
       color-scheme: light;
     }}
     :root[data-theme="dark"] {{
-      --bg: #121316;
-      --bg-raised: #101014;
-      --bg-sunken: #08090b;
-      --bg-glass: rgba(18, 19, 22, 0.86);
-      --ink: #f2f1ee;
-      --ink-strong: #ffffff;
-      --muted: rgba(242, 241, 238, 0.62);
-      --faint: rgba(242, 241, 238, 0.38);
-      --line: rgba(242, 241, 238, 0.14);
-      --line-strong: rgba(242, 241, 238, 0.38);
+      --bg: #0c0d10;
+      --surface: #14161b;
+      --surface-hover: #191c23;
+      --surface-subtle: #1d2028;
+      --header-bg: rgba(12, 13, 16, 0.82);
+      --text: #f3f4f6;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
       --accent: #2d81ff;
-      --accent-ink: #74aaff;
-      --invert-bg: #ffffff;
-      --invert-fg: #0b0b0c;
-      --emerald: #34d399;
+      --accent-soft: rgba(45, 129, 255, 0.14);
+      --logo-frame: #f2f1ee;
+      --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+      --shadow-hover: 0 14px 32px rgba(0, 0, 0, 0.45);
       color-scheme: dark;
     }}
     * {{
@@ -971,1381 +943,656 @@ def generate_hub_index(out_root: Path):
     html {{
       scroll-behavior: smooth;
       background: var(--bg);
-      color: var(--ink);
+      color: var(--text);
       font-family: var(--font-sans);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }}
     body {{
-      background: var(--bg);
-      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(45, 129, 255, 0.12), transparent 70%),
+        var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
     }}
     a {{
       color: inherit;
       text-decoration: none;
     }}
-    /* Typography Helpers */
-    .font-display {{
-      font-family: var(--font-display);
-      font-weight: 650;
-      font-stretch: 118%;
-      letter-spacing: -0.035em;
-      line-height: 1.02;
-      font-variation-settings: "wdth" 118;
+    /* SVG Brand Mark Styling */
+    .brand-logo-svg {{
+      display: block;
+      width: 100%;
+      height: 100%;
     }}
-    .font-serif {{
-      font-family: var(--font-serif);
-      font-weight: 400;
-      font-style: italic;
-      letter-spacing: -0.01em;
+    .brand-logo-svg .logo-frame {{
+      fill: var(--logo-frame);
+      transition: fill 0.2s ease;
     }}
-    .hud-label {{
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--muted);
+    .brand-logo-svg .logo-nib {{
+      fill: #2d81ff;
     }}
-    /* Corner Crosshair Ticks */
-    .tick {{
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      pointer-events: none;
-      z-index: 2;
-    }}
-    .tick-tl {{ top: -1px; left: -1px; border-top: 1.5px solid var(--ink-strong); border-left: 1.5px solid var(--ink-strong); }}
-    .tick-tr {{ top: -1px; right: -1px; border-top: 1.5px solid var(--ink-strong); border-right: 1.5px solid var(--ink-strong); }}
-    .tick-bl {{ bottom: -1px; left: -1px; border-bottom: 1.5px solid var(--ink-strong); border-left: 1.5px solid var(--ink-strong); }}
-    .tick-br {{ bottom: -1px; right: -1px; border-bottom: 1.5px solid var(--ink-strong); border-right: 1.5px solid var(--ink-strong); }}
-    /* Sticky Top HUD Header */
-    .top-nav {{
+    /* Sticky Glass Header */
+    .site-header {{
       position: sticky;
       top: 0;
       z-index: 50;
-      height: 48px;
-      background: var(--bg-glass);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
+      height: 60px;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
     }}
-    .top-nav-inner {{
-      max-width: 1280px;
+    .header-inner {{
+      max-width: 1240px;
       height: 100%;
       margin: 0 auto;
-      padding: 0 20px;
-      border-left: 1px solid var(--line);
-      border-right: 1px solid var(--line);
+      padding: 0 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
     }}
-    .brand {{
-      display: flex;
+    .brand-lockup {{
+      display: inline-flex;
       align-items: center;
-      gap: 10px;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: -0.02em;
-      color: var(--ink-strong);
+      gap: 11px;
     }}
-    .brand svg {{
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      fill: none;
+    .brand-mark-box {{
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      padding: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-card);
       flex-shrink: 0;
     }}
-    .brand-badge {{
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 2px 7px;
-      border: 1px solid var(--line-strong);
-      color: var(--accent-ink);
-      background: rgba(45, 129, 255, 0.08);
-    }}
-    .nav-links {{
-      display: flex;
-      align-items: center;
-      gap: 22px;
-    }}
-    .nav-links a {{
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-      transition: color 0.15s ease;
-    }}
-    .nav-links a:hover {{
-      color: var(--ink-strong);
-    }}
-    .nav-actions {{
+    .brand-text {{
       display: flex;
       align-items: center;
       gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.025em;
     }}
-    .icon-btn {{
-      height: 30px;
-      padding: 0 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      border: 1px solid var(--line);
-      background: transparent;
-      color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }}
-    .icon-btn:hover {{
-      color: var(--ink-strong);
-      border-color: var(--line-strong);
-      background: var(--bg-raised);
-    }}
-    .nav-cta {{
-      height: 30px;
-      padding: 0 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--invert-bg);
-      color: var(--invert-fg);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      transition: opacity 0.15s ease;
-    }}
-    .nav-cta:hover {{
-      opacity: 0.86;
-    }}
-    /* Main Architectural Frame */
-    .frame {{
-      max-width: 1280px;
-      margin: 0 auto;
-      border-left: 1px solid var(--line);
-      border-right: 1px solid var(--line);
-    }}
-    /* Sticky Numbered Section Eyebrow Bar */
-    .section-bar {{
-      position: sticky;
-      top: 48px;
-      z-index: 30;
-      min-height: 40px;
-      padding: 8px 24px;
-      background: var(--bg-glass);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }}
-    .section-bar-left {{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }}
-    .section-dot {{
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      display: inline-block;
-    }}
-    /* Hero Section */
-    .hero-grid {{
-      display: grid;
-      grid-template-columns: 7fr 5fr;
-      border-bottom: 1px solid var(--line);
-    }}
-    .hero-left {{
-      position: relative;
-      padding: 56px 48px;
-      border-right: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 32px;
-      background:
-        radial-gradient(circle at 12% 15%, rgba(45, 129, 255, 0.09), transparent 52%),
-        var(--bg);
-    }}
-    .status-pill {{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      align-self: flex-start;
-      padding: 5px 11px;
-      border: 1px solid var(--line);
-      background: var(--bg-raised);
-    }}
-    .pulse-dot {{
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: var(--emerald);
-      box-shadow: 0 0 10px var(--emerald);
-    }}
-    .hero-title {{
-      font-size: clamp(2.5rem, 5.2vw, 4.5rem);
-      color: var(--ink-strong);
-      margin: 18px 0 20px;
-    }}
-    .hero-title .font-serif {{
-      font-weight: 400;
-      color: var(--accent-ink);
-      padding-right: 4px;
-    }}
-    .hero-lead {{
-      font-size: clamp(1rem, 1.35vw, 1.14rem);
-      line-height: 1.65;
-      color: var(--muted);
-      max-width: 620px;
-    }}
-    .hero-lead strong {{
-      color: var(--ink-strong);
-      font-weight: 600;
-    }}
-    .hero-cta-row {{
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-    }}
-    .btn-mono-primary {{
-      height: 44px;
-      padding: 0 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--invert-bg);
-      color: var(--invert-fg);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-    }}
-    .btn-mono-primary:hover {{
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }}
-    .btn-mono-outline {{
-      height: 44px;
-      padding: 0 16px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--line-strong);
-      background: var(--bg-raised);
-      color: var(--ink-strong);
-      font-family: var(--font-mono);
-      font-size: 11px;
+    .brand-text span.sub {{
       font-weight: 500;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      color: var(--text-secondary);
     }}
-    .btn-mono-outline:hover {{
-      background: var(--invert-bg);
-      color: var(--invert-fg);
-      border-color: var(--invert-bg);
-    }}
-    /* Right Hero Column: Interactive 13-App Dock */
-    .hero-right {{
-      padding: 36px 32px;
-      background: var(--bg-sunken);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 20px;
-    }}
-    .dock-header {{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
-    }}
-    .dock-grid {{
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }}
-    .dock-item {{
-      padding: 10px 6px;
-      border: 1px solid var(--line);
-      background: var(--bg-raised);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 7px;
-      text-align: center;
-      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-    }}
-    .dock-item:hover {{
-      transform: translateY(-3px);
-      border-color: var(--app);
-      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
-    }}
-    .dock-icon-wrap {{
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }}
-    .dock-icon-wrap img {{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }}
-    .dock-label {{
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--ink-strong);
-      white-space: nowrap;
-    }}
-    .dock-craft {{
-      font-style: normal;
-      color: var(--app-light);
-    }}
-    :root[data-theme="dark"] .dock-craft {{
-      color: var(--app-dark);
-    }}
-    .dock-footer {{
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .badge-community {{
       font-family: var(--font-mono);
       font-size: 10.5px;
-      color: var(--muted);
-    }}
-    /* 4-Column Architectural Stat Bar */
-    .stats-grid {{
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: var(--line);
-      gap: 1px;
-      border-bottom: 1px solid var(--line);
-    }}
-    .stat-cell {{
-      background: var(--bg);
-      padding: 22px 26px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }}
-    .stat-num {{
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--ink-strong);
-      letter-spacing: -0.03em;
-    }}
-    .stat-title {{
-      font-family: var(--font-mono);
-      font-size: 11px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--accent-ink);
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(45, 129, 255, 0.25);
     }}
-    .stat-sub {{
-      font-size: 12.5px;
-      color: var(--muted);
-    }}
-    /* Infinite Marquee Strip */
-    .marquee-wrap {{
-      overflow: hidden;
-      background: var(--bg-sunken);
-      border-bottom: 1px solid var(--line);
-      padding: 11px 0;
-      user-select: none;
-    }}
-    .marquee-track {{
+    .header-nav {{
       display: flex;
-      width: max-content;
-      animation: artcraft-marquee 42s linear infinite;
+      align-items: center;
+      gap: 8px;
     }}
-    .marquee-wrap:hover .marquee-track {{
-      animation-play-state: paused;
-    }}
-    .marquee-item {{
+    .nav-btn {{
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 12px;
-      padding: 0 22px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      white-space: nowrap;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }}
-    .marquee-item b {{
-      color: var(--ink-strong);
+    .nav-btn:hover {{
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: var(--surface-hover);
+    }}
+    /* Main Container */
+    .container {{
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+    }}
+    /* Compact, Focused Hero */
+    .hero {{
+      padding: 40px 0 28px;
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto;
+    }}
+    .hero-logo-badge {{
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 16px;
+      padding: 10px;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-hover);
+    }}
+    .hero h1 {{
+      font-size: clamp(1.85rem, 3.6vw, 2.65rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin-bottom: 12px;
+    }}
+    .hero h1 span {{
+      background: linear-gradient(135deg, #2d81ff 0%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }}
+    .hero-sub {{
+      font-size: 15.5px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }}
+    .hero-sub a {{
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }}
+    .credit-pill {{
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-card);
+    }}
+    .credit-pill a {{
+      color: var(--accent);
       font-weight: 600;
     }}
-    .marquee-sq {{
-      width: 5px;
-      height: 5px;
-      background: var(--accent);
-      display: inline-block;
+    .credit-pill a:hover {{
+      text-decoration: underline;
     }}
-    @keyframes artcraft-marquee {{
-      0% {{ transform: translateX(0); }}
-      100% {{ transform: translateX(-50%); }}
+    .dot-live {{
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
     }}
-    /* Filter Controls inside Section 02 Bar */
-    .filter-controls {{
+    /* Toolbar: Category Filter Tabs + Search */
+    .toolbar {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 8px 0 20px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+    }}
+    .filter-tabs {{
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }}
     .filter-btn {{
-      height: 28px;
-      padding: 0 11px;
-      border: 1px solid var(--line);
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 9px;
+      border: 1px solid transparent;
       background: transparent;
-      color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 10px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
       cursor: pointer;
       transition: all 0.15s ease;
     }}
     .filter-btn:hover {{
-      color: var(--ink-strong);
-      border-color: var(--line-strong);
+      color: var(--text);
+      background: var(--surface-subtle);
     }}
     .filter-btn.active {{
-      background: var(--invert-bg);
-      color: var(--invert-fg);
-      border-color: var(--invert-bg);
+      background: var(--text);
+      color: var(--bg);
+    }}
+    .search-box {{
+      position: relative;
+      flex: 1;
+      min-width: 210px;
+      max-width: 280px;
     }}
     .search-input {{
-      height: 28px;
-      padding: 0 10px;
-      border: 1px solid var(--line);
-      background: var(--bg-raised);
-      color: var(--ink-strong);
-      font-family: var(--font-mono);
-      font-size: 11px;
+      width: 100%;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
       outline: none;
-      width: 180px;
       transition: border-color 0.15s ease;
     }}
     .search-input:focus {{
       border-color: var(--accent);
     }}
-    /* 13-App Lineup Grid (1px Hairline Architecture) */
-    .lineup-grid {{
+    /* Compact 3-to-4 Column App Grid */
+    .apps-grid {{
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      background: var(--line);
-      gap: 1px;
-      border-bottom: 1px solid var(--line);
+      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+      gap: 16px;
     }}
     .app-card {{
       position: relative;
-      background: var(--bg);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      transition: background-color 0.2s ease;
+      gap: 12px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+      overflow: hidden;
+    }}
+    .app-card::before {{
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--app);
+      opacity: 0.75;
+      transition: opacity 0.18s ease, height 0.18s ease;
     }}
     .app-card:hover {{
-      background: var(--bg-raised);
+      transform: translateY(-3px);
+      background: var(--surface-hover);
+      border-color: color-mix(in srgb, var(--app) 50%, var(--border-strong));
+      box-shadow: var(--shadow-hover);
     }}
-    .card-accent-bar {{
-      height: 2px;
-      width: 100%;
-      background: var(--app);
-      transform: scaleX(0.28);
-      transform-origin: left;
-      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    .app-card:hover::before {{
+      opacity: 1;
     }}
-    .app-card:hover .card-accent-bar {{
-      transform: scaleX(1);
-    }}
-    .card-hud {{
-      padding: 12px 24px;
-      border-bottom: 1px solid var(--line);
+    .card-top {{
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      gap: 13px;
     }}
-    .card-hud-left {{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }}
-    .num-badge {{
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      padding: 2px 6px;
-      background: var(--app);
-      color: #000000;
-    }}
-    .card-role {{
-      color: var(--ink-strong);
-      font-weight: 600;
-    }}
-    .card-equiv {{
-      color: var(--muted);
-    }}
-    /* 16:10 Self-Contained iPadOS Desktop Workspace Blueprint Preview */
-    .card-preview {{
-      position: relative;
-      aspect-ratio: 16 / 9.2;
-      width: 100%;
+    .card-icon {{
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 78% 28%, color-mix(in srgb, var(--app) 26%, transparent), transparent 62%),
-        linear-gradient(180deg, rgba(16, 17, 22, 0.96) 0%, rgba(10, 11, 14, 0.99) 100%);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }}
-    .preview-menubar {{
-      height: 26px;
-      padding: 0 12px;
-      background: rgba(255, 255, 255, 0.04);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      color: rgba(242, 241, 238, 0.68);
-      white-space: nowrap;
-      overflow: hidden;
-    }}
-    .preview-menubar-left {{
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow: hidden;
-    }}
-    .preview-dot {{
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: var(--app);
-      box-shadow: 0 0 8px var(--app);
       flex-shrink: 0;
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
     }}
-    .preview-menus {{
-      letter-spacing: 0.04em;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }}
-    .preview-status {{
-      font-size: 8.5px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--app-dark);
-      padding: 2px 6px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(0, 0, 0, 0.35);
-      flex-shrink: 0;
-    }}
-    .preview-canvas {{
-      position: relative;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px 20px 28px 96px;
-      background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }}
-    .preview-blueprint {{
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px dashed rgba(255, 255, 255, 0.16);
-      background: rgba(14, 15, 19, 0.68);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      transition: border-color 0.25s ease, transform 0.25s ease;
-    }}
-    .app-card:hover .preview-blueprint {{
-      border-color: var(--app);
-      transform: translateY(-2px);
-    }}
-    .preview-spec-top {{
-      font-family: var(--font-mono);
-      font-size: 8.5px;
-      letter-spacing: 0.14em;
-      color: rgba(242, 241, 238, 0.5);
-      text-transform: uppercase;
-    }}
-    .preview-watermark {{
-      font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: #ffffff;
-    }}
-    .preview-watermark span {{
-      color: var(--app-dark);
-    }}
-    .preview-spec-bot {{
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.1em;
-      color: rgba(242, 241, 238, 0.72);
-    }}
-    .preview-dock-pill {{
-      position: absolute;
-      bottom: 10px;
-      right: 12px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(24, 26, 32, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #f2f1ee;
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-    }}
-    /* Community Credit Notice Banner */
-    .credit-banner {{
-      padding: 14px 24px;
-      background: rgba(45, 129, 255, 0.07);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--muted);
-    }}
-    .credit-banner strong {{
-      color: var(--ink-strong);
-      font-weight: 600;
-    }}
-    .credit-banner a {{
-      color: var(--accent-ink);
-      font-weight: 600;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }}
-    /* Card Content Body */
-    .card-body {{
-      padding: 22px 26px 26px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      gap: 16px;
-    }}
-    .card-title-row {{
-      display: flex;
-      align-items: flex-end;
-      gap: 14px;
-      margin-top: -42px;
-      position: relative;
-      z-index: 2;
-    }}
-    .card-icon-float {{
-      width: 68px;
-      height: 68px;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 2px solid var(--bg);
-      background: var(--bg-raised);
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
-      flex-shrink: 0;
-    }}
-    .card-icon-float img {{
+    .card-icon img {{
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }}
-    .card-title-group {{
+    .card-heading {{
       flex: 1;
-      padding-bottom: 2px;
+      min-width: 0;
+    }}
+    .card-title-line {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
     }}
     .card-title {{
-      font-family: var(--font-display);
-      font-size: 26px;
+      font-size: 17px;
       font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.05;
-      color: var(--ink-strong);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }}
-    .craft-accent {{
+    .craft-tint {{
       color: var(--app-light);
     }}
-    :root[data-theme="dark"] .craft-accent {{
+    :root[data-theme="dark"] .craft-tint {{
       color: var(--app-dark);
     }}
-    .card-cat-sub {{
+    .role-pill {{
       font-family: var(--font-mono);
       font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--faint);
-      margin-top: 3px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      flex-shrink: 0;
     }}
-    .card-quick-arrow {{
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--line);
-      background: var(--bg-raised);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 14px;
-      color: var(--muted);
-      transition: all 0.15s ease;
-    }}
-    .app-card:hover .card-quick-arrow {{
-      border-color: var(--app);
-      background: var(--app);
-      color: #000000;
+    .card-equiv {{
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }}
     .card-desc {{
-      font-size: 14.5px;
-      line-height: 1.6;
-      color: var(--muted);
-      flex: 1;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 39px;
     }}
     .card-tags {{
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
     }}
     .tag {{
       font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 4px 8px;
-      border: 1px solid var(--line);
-      background: var(--bg-sunken);
-      color: var(--muted);
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
     }}
-    .card-actions {{
+    .card-footer {{
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
-      padding-top: 6px;
+      padding-top: 10px;
+      margin-top: auto;
+      border-top: 1px solid var(--border);
     }}
     .btn-launch {{
       flex: 1;
-      height: 40px;
-      padding: 0 16px;
-      background: var(--invert-bg);
-      color: var(--invert-fg);
-      font-family: var(--font-mono);
-      font-size: 11px;
+      height: 34px;
+      padding: 0 13px;
+      border-radius: 9px;
+      background: var(--text);
+      color: var(--bg);
+      font-size: 12.5px;
       font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
       display: inline-flex;
       align-items: center;
       justify-content: space-between;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
     }}
     .btn-launch:hover {{
       background: var(--app);
       color: #000000;
     }}
-    .btn-sub {{
-      height: 40px;
-      padding: 0 12px;
-      border: 1px solid var(--line-strong);
-      background: transparent;
-      color: var(--ink-strong);
+    .launch-arrow {{
       font-family: var(--font-mono);
-      font-size: 10.5px;
+      font-size: 13px;
+    }}
+    .card-sub-links {{
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }}
+    .btn-pill {{
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
     }}
-    .btn-sub:hover {{
-      border-color: var(--app);
-      color: var(--app-light);
-      background: var(--bg-sunken);
+    .btn-pill:hover {{
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: var(--surface-subtle);
     }}
-    :root[data-theme="dark"] .btn-sub:hover {{
-      color: var(--app-dark);
+    .empty-state {{
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      border-radius: 16px;
+      border: 1px dashed var(--border-strong);
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 12px;
     }}
-    /* Section 03: iPadOS Touch & Desktop Engine Grid */
-    .engine-intro {{
-      padding: 44px 48px 36px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 24px;
-    }}
-    .engine-intro h2 {{
-      font-size: clamp(1.85rem, 3.3vw, 2.75rem);
-      color: var(--ink-strong);
-      max-width: 680px;
-    }}
-    .engine-intro p {{
-      font-size: 14.5px;
-      line-height: 1.6;
-      color: var(--muted);
-      max-width: 440px;
-    }}
-    .engine-grid {{
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: var(--line);
-      gap: 1px;
-      border-bottom: 1px solid var(--line);
-    }}
-    .engine-card {{
-      background: var(--bg);
-      padding: 28px 26px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }}
-    .engine-num {{
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      color: var(--accent-ink);
-      text-transform: uppercase;
-    }}
-    .engine-card h3 {{
-      font-family: var(--font-display);
-      font-size: 19px;
-      font-weight: 700;
-      color: var(--ink-strong);
-      letter-spacing: -0.02em;
-    }}
-    .engine-card p {{
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: var(--muted);
-      flex: 1;
-    }}
-    .engine-Spec {{
-      padding-top: 12px;
-      border-top: 1px solid var(--line);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--faint);
-    }}
-    /* Section 04: Installation & Auto-Update Blueprint */
-    .install-grid {{
+    /* Compact 2-Column Info Section Below Grid */
+    .info-grid {{
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      background: var(--line);
-      gap: 1px;
-      border-bottom: 1px solid var(--line);
+      gap: 16px;
+      margin-top: 32px;
     }}
-    .install-col {{
-      background: var(--bg);
-      padding: 38px 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
+    .info-card {{
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow-card);
     }}
-    .install-head {{
+    .info-card-head {{
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
     }}
-    .install-title {{
-      font-family: var(--font-display);
-      font-size: 22px;
+    .info-card h3 {{
+      font-size: 16px;
       font-weight: 700;
-      color: var(--ink-strong);
+      letter-spacing: -0.02em;
     }}
-    .step-list {{
+    .info-list {{
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
     }}
-    .step-item {{
-      display: grid;
-      grid-template-columns: 32px 1fr;
-      gap: 12px;
-      align-items: start;
-    }}
-    .step-idx {{
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 0;
-      text-align: center;
-      border: 1px solid var(--line-strong);
-      background: var(--bg-sunken);
-      color: var(--ink-strong);
-    }}
-    .step-text {{
-      font-size: 14px;
+    .info-list li {{
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 13.5px;
       line-height: 1.55;
-      color: var(--muted);
+      color: var(--text-secondary);
     }}
-    .step-text strong {{
-      color: var(--ink-strong);
+    .info-list li strong {{
+      color: var(--text);
       font-weight: 600;
     }}
-    /* Architectural Footer */
-    .footer {{
-      padding: 48px 40px 56px;
-      background: var(--bg-sunken);
-      display: flex;
-      flex-direction: column;
-      gap: 36px;
-    }}
-    .footer-top {{
-      display: grid;
-      grid-template-columns: 1.2fr 2fr;
-      gap: 40px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--line);
-    }}
-    .footer-brand-col {{
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }}
-    .footer-brand-col p {{
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: var(--muted);
-      max-width: 360px;
-    }}
-    .footer-apps-grid {{
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px 16px;
-    }}
-    .footer-link {{
+    .step-dot {{
       font-family: var(--font-mono);
       font-size: 11px;
-      color: var(--ink-strong);
-      padding: 4px 0;
-      transition: color 0.15s ease;
+      font-weight: 600;
+      color: var(--accent);
+      flex-shrink: 0;
     }}
-    .footer-link span {{
-      color: var(--faint);
-      font-size: 10px;
-    }}
-    .footer-link:hover {{
-      color: var(--accent-ink);
-    }}
-    .footer-bottom {{
+    /* Clean Minimal Footer */
+    .site-footer {{
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 16px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--muted);
+      gap: 14px;
+      font-size: 12.5px;
+      color: var(--text-muted);
     }}
-    .footer-bottom a {{
-      color: var(--ink-strong);
+    .site-footer a {{
+      color: var(--text-secondary);
+      font-weight: 500;
       text-decoration: underline;
       text-underline-offset: 3px;
     }}
-    /* Responsive Breakpoints */
-    @media (max-width: 1080px) {{
-      .hero-grid {{
-        grid-template-columns: 1fr;
-      }}
-      .hero-left {{
-        border-right: none;
-        border-bottom: 1px solid var(--line);
-        padding: 40px 28px;
-      }}
-      .stats-grid {{
-        grid-template-columns: repeat(2, 1fr);
-      }}
-      .engine-grid {{
-        grid-template-columns: repeat(2, 1fr);
-      }}
-      .install-grid {{
-        grid-template-columns: 1fr;
-      }}
-      .footer-top {{
-        grid-template-columns: 1fr;
-      }}
+    .site-footer a:hover {{
+      color: var(--text);
     }}
-    @media (max-width: 780px) {{
-      .nav-links {{
+    @media (max-width: 820px) {{
+      .info-grid {{
+        grid-template-columns: 1fr;
+      }}
+      .badge-community {{
         display: none;
       }}
-      .lineup-grid {{
-        grid-template-columns: 1fr;
-      }}
-      .engine-grid {{
-        grid-template-columns: 1fr;
-      }}
-      .stats-grid {{
-        grid-template-columns: 1fr;
-      }}
-      .footer-apps-grid {{
-        grid-template-columns: repeat(2, 1fr);
-      }}
-      .engine-intro, .install-col, .footer {{
-        padding: 28px 20px;
+      .search-box {{
+        max-width: 100%;
       }}
     }}
   </style>
 </head>
 <body>
-  <!-- Sticky Top HUD Bar -->
-  <header class="top-nav">
-    <div class="top-nav-inner">
-      <a href="#" class="brand">
-        <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
-          <line x1="6" y1="12" x2="6.01" y2="12"/>
-          <path d="M14.5 9.5l2.5 2.5-4.5 4.5H10v-2.5l4.5-4.5z"/>
-        </svg>
-        <span>Craft for iPadOS</span>
-        <span class="brand-badge">Community Port</span>
+  <!-- Sticky Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="brand-lockup">
+        <div class="brand-mark-box">
+          {logo_svg_inline}
+        </div>
+        <div class="brand-text">
+          <span>Craft <span class="sub">for iPadOS</span></span>
+          <span class="badge-community">Community Edition</span>
+        </div>
       </a>
-      <nav class="nav-links" aria-label="Primary Navigation">
-        <a href="#lineup">01 / Lineup (13)</a>
-        <a href="#engine">02 / iPadOS Engine</a>
-        <a href="#install">03 / Install Guide</a>
-        <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">04 / Releases (.ipa)</a>
-      </nav>
-      <div class="nav-actions">
-        <button type="button" id="themeToggle" class="icon-btn" title="Switch Light / Dark Appearance">
+      <div class="header-nav">
+        <a href="#guide" class="nav-btn">Install Guide</a>
+        <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" class="nav-btn">.IPA Releases</a>
+        <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" class="nav-btn">GitHub ↗</a>
+        <button type="button" id="themeToggle" class="nav-btn" title="Toggle Dark / Light Mode">
           <span id="themeIcon">☀</span>
-          <span id="themeLabel">Theme</span>
+          <span id="themeLabel">Light</span>
         </button>
-        <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" class="icon-btn" title="GitHub Repository">
-          GitHub ↗
-        </a>
-        <a href="#lineup" class="nav-cta">Launch Apps ↓</a>
       </div>
     </div>
   </header>
-  <main class="frame">
-    <!-- Prominent Open-Source Creator Credit & Community Port Disclaimer -->
-    <div class="credit-banner">
-      <div>
-        <strong>Unofficial Community Port by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">@Milanista86</a>:</strong>
-        Adapting the 13 open-source desktop applications created by <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> for fullscreen iPadOS use. All credit for the core engines &amp; icons belongs to <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">@storytold</a>.
+
+  <main class="container">
+    <!-- Clean, Focused Hero -->
+    <section class="hero">
+      <div class="hero-logo-badge">
+        {logo_svg_inline}
       </div>
-      <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" class="hud-label" style="color: var(--accent-ink);">Visit Official ArtCraft Site ↗</a>
-    </div>
-    <!-- Section 01: Hero & Interactive 13-App Dock -->
-    <div class="section-bar">
-      <div class="section-bar-left">
-        <span class="section-dot"></span>
-        <span class="hud-label">01 / Community iPadOS Adaptation</span>
-      </div>
-      <span class="hud-label">13 Open-Source Apps &middot; Upstream by @storytold &middot; iPadOS Layer by @Milanista86</span>
-    </div>
-    <section class="hero-grid">
-      <div class="hero-left">
-        <span class="tick tick-tl"></span>
-        <span class="tick tick-tr"></span>
-        <span class="tick tick-bl"></span>
-        <span class="tick tick-br"></span>
-        <div>
-          <div class="status-pill">
-            <span class="pulse-dot"></span>
-            <span class="hud-label" style="color: var(--ink-strong);">Unofficial Community Hub &middot; Auto-Synced Weekly from @storytold</span>
-          </div>
-          <h1 class="font-display hero-title">
-            Desktop creative &amp; office apps —<br>
-            <span class="font-serif">adapted</span> for iPadOS.
-          </h1>
-          <p class="hero-lead">
-            An open-source community port bringing all 13 Rust &amp; WebAssembly desktop applications by <strong><a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; text-underline-offset: 3px;">ArtCraft (@storytold)</a></strong> to your iPad. Enjoy <strong>100% desktop mouse, trackpad &amp; keyboard fidelity</strong> alongside our custom draggable Apple Pencil tool dock, Procreate-style multi-touch gestures, and native iPadOS Files integration.
-          </p>
-        </div>
-        <div class="hero-cta-row">
-          <a href="#lineup" class="btn-mono-primary">
-            <span>Explore All 13 Apps</span>
-            <span>↓</span>
-          </a>
-          <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" class="btn-mono-outline">
-            <span>↓ Download .IPA Suite</span>
-          </a>
-          <button type="button" id="copyHubBtn" class="btn-mono-outline">
-            <span id="copyHubText">Copy Hub Link</span>
-          </button>
-        </div>
-      </div>
-      <div class="hero-right">
-        <div class="dock-header">
-          <span class="hud-label" style="color: var(--ink-strong);">Interactive App Dock (13)</span>
-          <span class="hud-label">Tap Icon to Jump ↓</span>
-        </div>
-        <div class="dock-grid">
-{dock_html}
-        </div>
-        <div class="dock-footer">
-          <span>7 CREATIVE &amp; DESIGN</span>
-          <span>&bull;</span>
-          <span>6 OFFICE, AUDIO &amp; CAD</span>
-        </div>
+      <h1>Pro Desktop Apps, <span>Adapted for iPadOS</span></h1>
+      <p class="hero-sub">
+        All 13 open-source desktop applications created by <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> — tailored for fullscreen iPadOS with 100% desktop Mouse, Trackpad &amp; Keyboard fidelity plus Apple Pencil and Multi-Touch shortcuts.
+      </p>
+      <div class="credit-pill">
+        <span class="dot-live"></span>
+        <span>Upstream engines &amp; icons by <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">@storytold</a> &middot; Unofficial iPadOS adaptation by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">@Milanista86</a></span>
       </div>
     </section>
-    <!-- 4-Column Architectural Stat Bar -->
-    <section class="stats-grid" aria-label="Suite Highlights">
-      <div class="stat-cell">
-        <div class="stat-num">13 Apps</div>
-        <div class="stat-title">Complete Desktop Suite</div>
-        <div class="stat-sub">Photo, Vector, Layout, RAW, Video, VFX, UI, Office, PDF, DAW &amp; CAD</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">100%</div>
-        <div class="stat-title">Desktop Mouse &amp; Keyboard</div>
-        <div class="stat-sub">Passive touch layer leaves Magic Keyboard, trackpad &amp; mice untouched</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">2 Modes</div>
-        <div class="stat-title">Cloud PWA + Native .IPA</div>
-        <div class="stat-sub">Install directly from Safari or sideload edge-to-edge native .ipa</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-num">$0 / Forever</div>
-        <div class="stat-title">Open Source &amp; Auto-Updated</div>
-        <div class="stat-sub">No subscriptions, no accounts, no telemetry &middot; MIT / Apache-2.0</div>
-      </div>
-    </section>
-    <!-- Infinite Scrolling Marquee Ticker -->
-    <div class="marquee-wrap" aria-hidden="true">
-      <div class="marquee-track">
-        <span class="marquee-item"><span class="marquee-sq"></span> <b>NATIVE IPADOS FILES SHARE SHEET</b></span>
-        <span class="marquee-item"><span class="marquee-sq"></span> PROCREATE-STYLE <b>2-FINGER UNDO &amp; 3-FINGER REDO</b></span>
-        <span class="marquee-item"><span class="marquee-sq"></span> DRAGGABLE FLOATING <b>TOUCH &amp; APPLE PENCIL DOCK (⚙️)</b></span>
-        <span class="marquee-item"><span class="marquee-sq"></span> <b>100% DESKTOP</b> MOUSE, TRACKPAD &amp; KEYBOARD FIDELITY</span>
-        <span class="marquee-item"><span class="marquee-sq"></span> PURE <b>RUST + WEBASSEMBLY</b> ENGINE</span>
-        <span class="marquee-item"><span class="marquee-sq"></span> <b>AUTO-UPDATED WEEKLY</b> VIA GITHUB ACTIONS</span>
-        <span class="marquee-item"><span class="marquee-sq"></span> <b>NATIVE IPADOS FILES SHARE SHEET</b></span>
-        <span class="marquee-item"><span class="marquee-sq"></span> PROCREATE-STYLE <b>2-FINGER UNDO &amp; 3-FINGER REDO</b></span>
-        <span class="marquee-item"><span class="marquee-sq"></span> DRAGGABLE FLOATING <b>TOUCH &amp; APPLE PENCIL DOCK (⚙️)</b></span>
-        <span class="marquee-item"><span class="marquee-sq"></span> <b>100% DESKTOP</b> MOUSE, TRACKPAD &amp; KEYBOARD FIDELITY</span>
-        <span class="marquee-item"><span class="marquee-sq"></span> PURE <b>RUST + WEBASSEMBLY</b> ENGINE</span>
-        <span class="marquee-item"><span class="marquee-sq"></span> <b>AUTO-UPDATED WEEKLY</b> VIA GITHUB ACTIONS</span>
-      </div>
-    </div>
-    <!-- Section 02: The Lineup -->
-    <div id="lineup" class="section-bar">
-      <div class="section-bar-left">
-        <span class="section-dot"></span>
-        <span class="hud-label">02 / The Lineup — All Thirteen Applications</span>
-      </div>
-      <div class="filter-controls">
-        <button type="button" class="filter-btn active" data-filter="all">All (13)</button>
+
+    <!-- Filter & Search Bar -->
+    <div class="toolbar">
+      <div class="filter-tabs" role="tablist" aria-label="Filter applications by category">
+        <button type="button" class="filter-btn active" data-filter="all">All 13 Apps</button>
         <button type="button" class="filter-btn" data-filter="creative">Creative &amp; Design (7)</button>
         <button type="button" class="filter-btn" data-filter="office">Office, Audio &amp; CAD (6)</button>
-        <input type="search" id="appSearch" class="search-input" placeholder="Search apps or formats...">
+      </div>
+      <div class="search-box">
+        <input type="search" id="appSearch" class="search-input" placeholder="Search apps or file formats...">
       </div>
     </div>
-    <section class="lineup-grid" aria-label="Applications Lineup">
+
+    <!-- Compact 13-App Grid -->
+    <section class="apps-grid" aria-label="13 Applications">
 {lineup_html}
     </section>
-    <!-- Section 03: iPadOS Touch & Desktop Engine -->
-    <div id="engine" class="section-bar">
-      <div class="section-bar-left">
-        <span class="section-dot"></span>
-        <span class="hud-label">03 / iPadOS Touch &amp; Desktop Architecture</span>
+    <div id="emptyState" class="empty-state">No matching applications found. Try clearing your search filter.</div>
+
+    <!-- Compact 2-Column Guide & Features -->
+    <section id="guide" class="info-grid">
+      <div class="info-card">
+        <div class="info-card-head">
+          <h3>How to Install on iPad</h3>
+          <span class="badge-community">Cloud PWA or Native .IPA</span>
+        </div>
+        <ul class="info-list">
+          <li>
+            <span class="step-dot">01</span>
+            <div><strong>Add to Home Screen (No PC):</strong> Tap <strong>Launch App</strong> on any card above in Safari, tap the <strong>Share</strong> icon, and choose <strong>Add to Home Screen</strong> for a fullscreen app icon.</div>
+          </li>
+          <li>
+            <span class="step-dot">02</span>
+            <div><strong>Native .IPA Sideload (Optional):</strong> Tap <strong>.IPA</strong> on any card (or visit <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">GitHub Releases</a>) to install with Feather, ESign, SideStore, or Sideloadly.</div>
+          </li>
+          <li>
+            <span class="step-dot">03</span>
+            <div><strong>Automatic Weekly Updates:</strong> Synced every Sunday from <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">@storytold</a>. Tap <strong>⚙️ &rarr; 🔄</strong> inside any app to pull the latest version on demand.</div>
+          </li>
+        </ul>
       </div>
-      <span class="hud-label">Zero Interference with Mouse, Trackpad &amp; Physical Keyboard</span>
-    </div>
-    <div class="engine-intro">
-      <h2 class="font-display">
-        Built for <span class="font-serif">touch</span> when you hold it.<br>
-        Pure <span class="font-serif">desktop</span> when you dock it.
-      </h2>
-      <p>
-        Every iPadOS upgrade runs inside a passive overlay layer. When you attach a Magic Keyboard, external mouse, or trackpad, all native cursor events, hover states, right-clicks, and keyboard shortcuts work identically to macOS and Windows.
-      </p>
-    </div>
-    <section class="engine-grid">
-      <div class="engine-card">
-        <span class="engine-num">01 / Floating Dock (⚙️)</span>
-        <h3>Draggable Tool Pill</h3>
-        <p>
-          Press and drag the subtle <strong>⚙️</strong> button anywhere along the screen edges—each app remembers your preferred spot. Tap to open quick buttons for <strong>↩️ Undo</strong>, <strong>↪️ Redo</strong>, <strong>⌫ Delete</strong>, <strong>Right-Click</strong>, <strong>⌨️ Keyboard</strong>, and <strong>🔄 Instant Cloud Reload</strong>.
-        </p>
-        <div class="engine-Spec">Position Saved in LocalStorage</div>
-      </div>
-      <div class="engine-card">
-        <span class="engine-num">02 / Procreate Gestures</span>
-        <h3>Multi-Touch Shortcuts</h3>
-        <p>
-          Work without a physical keyboard effortlessly: <strong>Two-finger quick tap</strong> triggers Undo (<code>Ctrl+Z</code>), <strong>Three-finger quick tap</strong> triggers Redo (<code>Ctrl+Y</code>), and <strong>Two-finger pinch</strong> smoothly zooms the canvas in or out.
-        </p>
-        <div class="engine-Spec">100% Passive Touch Listeners</div>
-      </div>
-      <div class="engine-card">
-        <span class="engine-num">03 / Native Files Bridge</span>
-        <h3>Save to iPadOS Files</h3>
-        <p>
-          Exporting a PSD, SVG, DOCX, XLSX, PDF, WAV, or DXF automatically invokes the native <strong>iPadOS Share &amp; Save to Files sheet</strong> so you can save directly to iCloud Drive, On My iPad, or AirDrop, backed by persistent browser storage.
-        </p>
-        <div class="engine-Spec">Web Share Level 2 + Storage Lock</div>
-      </div>
-      <div class="engine-card">
-        <span class="engine-num">04 / Status Bar Layout</span>
-        <h3>Precision Top Menu Offset</h3>
-        <p>
-          Precision-tuned <code>18px</code> top safe-area offset in Safari Home Screen mode keeps the iPadOS clock and battery bar from overlapping the top menu bar (<code>File Edit Image Layer...</code>), or <code>0px</code> edge-to-edge in the native <code>.ipa</code>.
-        </p>
-        <div class="engine-Spec">Auto-Detected Standalone Mode</div>
+
+      <div class="info-card">
+        <div class="info-card-head">
+          <h3>iPadOS Touch &amp; Desktop Controls</h3>
+          <span class="badge-community">Zero Desktop Interference</span>
+        </div>
+        <ul class="info-list">
+          <li>
+            <span class="step-dot">✦</span>
+            <div><strong>100% Desktop Mouse &amp; Keyboard:</strong> Magic Keyboard, trackpad, hover states, right-click, and shortcuts work identically to macOS and Windows.</div>
+          </li>
+          <li>
+            <span class="step-dot">✦</span>
+            <div><strong>Draggable Tool Dock (⚙️) &amp; Gestures:</strong> Use <strong>2-finger tap</strong> for Undo, <strong>3-finger tap</strong> for Redo, <strong>2-finger pinch</strong> to zoom, or tap the draggable <strong>⚙️</strong> pill for quick actions.</div>
+          </li>
+          <li>
+            <span class="step-dot">✦</span>
+            <div><strong>Native iPadOS Files Integration:</strong> Exporting files automatically opens the native iPadOS <strong>Save to Files / Share Sheet</strong> (iCloud Drive, On My iPad, AirDrop).</div>
+          </li>
+        </ul>
       </div>
     </section>
-    <!-- Section 04: Installation & Auto-Update Guide -->
-    <div id="install" class="section-bar">
-      <div class="section-bar-left">
-        <span class="section-dot"></span>
-        <span class="hud-label">04 / Installation &amp; Auto-Update Guide</span>
+
+    <!-- Clean Attribution Footer -->
+    <footer class="site-footer">
+      <div>
+        Unofficial, non-commercial iPadOS adaptation by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">@Milanista86</a>. All 13 core applications &amp; icons are created by <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> (MIT / Apache-2.0).
       </div>
-      <span class="hud-label">Choose Cloud Web App (No PC) or Native .IPA Sideload</span>
-    </div>
-    <section class="install-grid">
-      <div class="install-col">
-        <div class="install-head">
-          <div class="install-title">Option A — Cloud Web App (Recommended)</div>
-          <span class="brand-badge">No PC Required</span>
-        </div>
-        <ol class="step-list">
-          <li class="step-item">
-            <span class="step-idx">01</span>
-            <div class="step-text">Open this page in <strong>Safari</strong> on your iPad, iPad Air, iPad mini, or iPad Pro.</div>
-          </li>
-          <li class="step-item">
-            <span class="step-idx">02</span>
-            <div class="step-text">Tap <strong>Launch</strong> on any of the 13 applications above and wait a moment for the workspace to appear.</div>
-          </li>
-          <li class="step-item">
-            <span class="step-idx">03</span>
-            <div class="step-text">Tap the Safari <strong>Share</strong> button (square with upward arrow) and select <strong>Add to Home Screen</strong>.</div>
-          </li>
-          <li class="step-item">
-            <span class="step-idx">04</span>
-            <div class="step-text"><strong>Automatic Updates:</strong> Our GitHub Actions bot checks <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">@storytold</a> every Sunday at 03:00 UTC. Tap <strong>⚙️ &rarr; 🔄</strong> inside any app to pull the newest build immediately.</div>
-          </li>
-        </ol>
-      </div>
-      <div class="install-col">
-        <div class="install-head">
-          <div class="install-title">Option B — Native .IPA Sideload</div>
-          <span class="brand-badge">Zero Status Bar &middot; Offline</span>
-        </div>
-        <ol class="step-list">
-          <li class="step-item">
-            <span class="step-idx">01</span>
-            <div class="step-text">Tap <strong>&darr; .IPA</strong> on any app card above (or visit <a href="https://github.com/Milanista86/craft-ipad-apps/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">GitHub Releases</a>) to download <code>&lt;AppName&gt;-iPad.ipa</code>.</div>
-          </li>
-          <li class="step-item">
-            <span class="step-idx">02</span>
-            <div class="step-text">Import and sign the <code>.ipa</code> directly on your iPad using <strong>Feather</strong>, <strong>ESign</strong>, <strong>GBox</strong>, <strong>SideStore</strong>, or <strong>Sideloadly</strong>.</div>
-          </li>
-          <li class="step-item">
-            <span class="step-idx">03</span>
-            <div class="step-text">Enjoy <strong>true edge-to-edge fullscreen</strong> with the iPadOS Status Bar &amp; Home Indicator hidden and 100% offline WebAssembly execution.</div>
-          </li>
-          <li class="step-item">
-            <span class="step-idx">04</span>
-            <div class="step-text">Whenever upstream releases a new version, run the <strong>Build All 13 Native iPadOS (.ipa) Apps</strong> workflow in GitHub Actions to generate fresh <code>.ipa</code> installers.</div>
-          </li>
-        </ol>
-      </div>
-    </section>
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-top">
-        <div class="footer-brand-col">
-          <div class="brand">
-            <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
-              <line x1="6" y1="12" x2="6.01" y2="12"/>
-              <path d="M14.5 9.5l2.5 2.5-4.5 4.5H10v-2.5l4.5-4.5z"/>
-            </svg>
-            <span>Craft for iPadOS (Community Hub)</span>
-          </div>
-          <p>
-            Unofficial, non-commercial community iPadOS adaptation maintained by <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">@Milanista86</a>. All 13 core Rust &amp; WebAssembly applications and icons are created by and copyright <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">ArtCraft (@storytold)</a> under MIT / Apache-2.0 licenses.
-          </p>
-        </div>
-        <div class="footer-apps-grid">
-{footer_apps_html}
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <div>
-          Upstream Engines &amp; Icons &copy; <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">ArtCraft (@storytold)</a> &middot; MIT / Apache-2.0 License
-        </div>
-        <div>
-          <a href="https://github.com/Milanista86/craft-ipad-apps" target="_blank" rel="noopener noreferrer">GitHub Repo</a> &middot;
-          <a href="https://github.com/Milanista86/craft-ipad-apps/releases" target="_blank" rel="noopener noreferrer">Native .IPA Releases</a> &middot;
-          <a href="https://getartcraft.com/apps" target="_blank" rel="noopener noreferrer">Official ArtCraft Website</a>
-        </div>
+      <div>
+        <a href="https://getartcraft.com" target="_blank" rel="noopener noreferrer">Official ArtCraft Site</a> &middot;
+        <a href="https://github.com/storytold" target="_blank" rel="noopener noreferrer">@storytold GitHub</a> &middot;
+        <a href="https://github.com/Milanista86/craft-ipad-apps/releases" target="_blank" rel="noopener noreferrer">Download .IPA Suite</a>
       </div>
     </footer>
   </main>
+
   <script>
     (function() {{
-      // 1. Theme Toggle (Dark / Light)
       var root = document.documentElement;
       var toggleBtn = document.getElementById('themeToggle');
       var themeIcon = document.getElementById('themeIcon');
@@ -2370,33 +1617,25 @@ def generate_hub_index(out_root: Path):
           syncThemeUI();
         }});
       }}
-      // 2. Copy Hub Link Button
-      var copyBtn = document.getElementById('copyHubBtn');
-      var copyText = document.getElementById('copyHubText');
-      if (copyBtn && copyText) {{
-        copyBtn.addEventListener('click', function() {{
-          var url = window.location.href.split('#')[0];
-          if (navigator.clipboard && navigator.clipboard.writeText) {{
-            navigator.clipboard.writeText(url).then(function() {{
-              copyText.textContent = '✓ Copied Link!';
-              setTimeout(function() {{ copyText.textContent = 'Copy Hub Link'; }}, 1800);
-            }});
-          }}
-        }});
-      }}
-      // 3. Category Filter & Live Search
       var filterBtns = document.querySelectorAll('.filter-btn');
       var searchInput = document.getElementById('appSearch');
       var cards = document.querySelectorAll('.app-card');
+      var emptyState = document.getElementById('emptyState');
       var activeCat = 'all';
       function applyFilter() {{
         var q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        var visibleCount = 0;
         cards.forEach(function(card) {{
           var catMatch = (activeCat === 'all') || (card.getAttribute('data-cat') === activeCat);
           var searchBlob = card.getAttribute('data-search') || '';
           var searchMatch = !q || searchBlob.indexOf(q) !== -1;
-          card.style.display = (catMatch && searchMatch) ? '' : 'none';
+          var show = catMatch && searchMatch;
+          card.style.display = show ? '' : 'none';
+          if (show) visibleCount++;
         }});
+        if (emptyState) {{
+          emptyState.style.display = (visibleCount === 0) ? 'block' : 'none';
+        }}
       }}
       filterBtns.forEach(function(btn) {{
         btn.addEventListener('click', function() {{
