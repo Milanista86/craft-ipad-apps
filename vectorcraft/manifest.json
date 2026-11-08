@@ -1,0 +1,24 @@
+{
+  "name": "VectorCraft",
+  "short_name": "VectorCraft",
+  "description": "Precision vector illustration, bezier pen workflows, boolean path operations, multi-artboard layouts, and SVG/PDF export.",
+  "start_url": "./?v=4",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e8573f",
+  "theme_color": "#1c1c1e",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png?v=4",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon.png?v=4",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

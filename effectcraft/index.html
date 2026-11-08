@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#1b1c1f">
+  <meta name="description" content="EffectCraft: motion graphics and visual effects in the browser">
+  <title>EffectCraft</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="EffectCraft">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4">
+  <link rel="apple-touch-icon" sizes="512x512" href="./icon.png?v=4">
+  <link rel="icon" type="image/png" sizes="180x180" href="./apple-touch-icon.png?v=4">
+  <link rel="manifest" href="./manifest.json?v=4">
+  
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-256.png">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #1b1c1f; }
+    canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+    #loading {
+      position: absolute; inset: 0; display: flex; flex-direction: column; gap: 14px;
+      align-items: center; justify-content: center; color: #c9c9cc;
+      font: 14px/1.4 system-ui, sans-serif; pointer-events: none;
+    }
+    #loading img { width: 56px; height: 56px; }
+    #loading .err { color: #ff8a7a; white-space: pre-wrap; max-width: 70ch; pointer-events: auto; }
+    #device-lost {
+      position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px;
+      align-items: center; justify-content: center; padding: 16px; text-align: center;
+      background: rgb(18 18 18 / 0.85); color: #c8c8c8; font: 14px/1.4 system-ui, sans-serif;
+    }
+    #device-lost strong { color: #e3e3e3; font-size: 16px; }
+    #device-lost p { margin: 0; max-width: 60ch; }
+    #device-lost small { color: #8c8c8c; font-size: 12px; }
+    #device-lost div { display: flex; gap: 8px; }
+    #device-lost button {
+      padding: 6px 14px; border: 1px solid #3a3a3a; border-radius: 4px;
+      background: #232323; color: #e3e3e3; font: inherit; cursor: pointer;
+    }
+    #device-lost button:hover { background: #303030; }
+    #device-lost button:last-child { background: #2d8ceb; border-color: #2d8ceb; }
+    #device-lost button:last-child:hover { background: #4aa0f5; }
+    #device-lost button:disabled { opacity: 0.6; cursor: default; }
+  </style>
+<script>
+(function() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      for (let reg of regs) { reg.unregister(); }
+    });
+    if (window.caches) {
+      caches.keys().then(function(keys) {
+        for (let k of keys) { caches.delete(k); }
+      });
+    }
+  }
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(function() {});
+  }
+  const isIPadDevice = /iPad|Macintosh/i.test(navigator.userAgent) && ('ontouchend' in document);
+  async function shareOrDownloadBlob(blob, filename, fallbackFn) {
+    const safeName = filename || "document";
+    if (isIPadDevice && navigator.canShare && navigator.share) {
+      try {
+        const file = new File([blob], safeName, { type: blob.type || "application/octet-stream" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: safeName });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+    if (fallbackFn) fallbackFn();
+  }
+  const origAnchorClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function() {
+    const hasDownload = this.hasAttribute("download") || Boolean(this.download);
+    const href = this.href || "";
+    const self = this;
+    const args = arguments;
+    if (isIPadDevice && hasDownload && (href.startsWith("blob:") || href.startsWith("data:"))) {
+      const fname = this.getAttribute("download") || this.download || "export";
+      fetch(href)
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          shareOrDownloadBlob(blob, fname, function() { origAnchorClick.apply(self, args); });
+        })
+        .catch(function() { origAnchorClick.apply(self, args); });
+      return;
+    }
+    return origAnchorClick.apply(this, arguments);
+  };
+  if (isIPadDevice && !window.showSaveFilePicker) {
+    window.showSaveFilePicker = async function(options) {
+      const suggestedName = (options && options.suggestedName) ? options.suggestedName : "document";
+      return {
+        name: suggestedName,
+        createWritable: async function() {
+          const chunks = [];
+          return {
+            write: async function(data) {
+              chunks.push((data && data.data) ? data.data : data);
+            },
+            close: async function() {
+              const blob = new Blob(chunks);
+              await shareOrDownloadBlob(blob, suggestedName);
+            }
+          };
+        }
+      };
+    };
+  }
+  window.addEventListener("DOMContentLoaded", function() {
+    const isNativeIpa = Boolean(
+      (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.craftSaveFile) ||
+      window.location.search.indexOf("ipa=1") !== -1
+    );
+    const statusOffset = isNativeIpa ? "0px" : "18px";
+    const style = document.createElement("style");
+    style.textContent = `
+      :root {
+        --ipad-status-offset: ${statusOffset};
+      }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        background: #1c1c1e !important;
+        overscroll-behavior: none !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        touch-action: none !important;
+      }
+      body > canvas, canvas[id] {
+        position: fixed !important;
+        top: var(--ipad-status-offset) !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: calc(100% - var(--ipad-status-offset)) !important;
+        display: block !important;
+        touch-action: none !important;
+      }
+      #craft-ipad-helper {
+        position: fixed; right: 12px; bottom: 12px; z-index: 2147483647;
+        display: flex; align-items: center; gap: 5px;
+        background: rgba(24, 24, 28, 0.88);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px; padding: 4px 7px;
+        font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #f0f0f5; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        touch-action: none; user-select: none; -webkit-user-select: none;
+      }
+      #craft-ipad-helper.collapsed .helper-btn { display: none; }
+      #craft-ipad-helper button {
+        appearance: none; border: none; background: rgba(255, 255, 255, 0.12);
+        color: #f0f0f5; padding: 6px 9px; border-radius: 999px; font: inherit; cursor: pointer;
+        white-space: nowrap;
+      }
+      #craft-ipad-helper button:active { background: rgba(255, 255, 255, 0.24); }
+      #craft-ipad-helper button.active { background: #0a84ff; color: #fff; }
+      #craft-ipad-toast {
+        position: fixed; top: calc(var(--ipad-status-offset) + 34px); left: 50%;
+        transform: translateX(-50%); z-index: 2147483647;
+        background: rgba(20, 20, 24, 0.88); color: #fff;
+        border: 1px solid rgba(255,255,255,0.16); border-radius: 999px;
+        padding: 6px 14px; font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+        pointer-events: none; opacity: 0; transition: opacity 0.15s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      }
+      #craft-ipad-toast.show { opacity: 1; }
+    `;
+    document.head.appendChild(style);
+    const toast = document.createElement("div");
+    toast.id = "craft-ipad-toast";
+    document.body.appendChild(toast);
+    let toastTimer = null;
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function() { toast.classList.remove("show"); }, 650);
+    }
+    function sendKeyShortcut(key, code, keyCode, ctrlOrCmd, shift) {
+      const opts = {
+        key: key, code: code, keyCode: keyCode, which: keyCode,
+        ctrlKey: Boolean(ctrlOrCmd), metaKey: Boolean(ctrlOrCmd), shiftKey: Boolean(shift),
+        bubbles: true, cancelable: true
+      };
+      const target = document.querySelector("canvas") || window;
+      target.dispatchEvent(new KeyboardEvent("keydown", opts));
+      window.dispatchEvent(new KeyboardEvent("keydown", opts));
+      setTimeout(function() {
+        target.dispatchEvent(new KeyboardEvent("keyup", opts));
+        window.dispatchEvent(new KeyboardEvent("keyup", opts));
+      }, 20);
+    }
+    let rightClickArmed = false;
+    const bar = document.createElement("div");
+    bar.id = "craft-ipad-helper";
+    bar.className = "collapsed";
+    bar.innerHTML = `
+      <button id="craft-undo-btn" class="helper-btn" title="Undo (Ctrl+Z)">↩️</button>
+      <button id="craft-redo-btn" class="helper-btn" title="Redo (Ctrl+Y)">↪️</button>
+      <button id="craft-del-btn" class="helper-btn" title="Delete Selected">⌫</button>
+      <button id="craft-rc-btn" class="helper-btn" title="Tap then touch canvas to Right-Click">Right-Click</button>
+      <button id="craft-kb-btn" class="helper-btn" title="Open On-Screen Keyboard">⌨️</button>
+      <button id="craft-reload-btn" class="helper-btn" title="Reload / Fetch Latest Update">🔄</button>
+      <button id="craft-toggle-btn" title="Tap to open tools, or drag to move">⚙️</button>
+    `;
+    document.body.appendChild(bar);
+    try {
+      const savedPos = JSON.parse(localStorage.getItem("craft_helper_pos") || "null");
+      if (savedPos && typeof savedPos.left === "number" && typeof savedPos.top === "number") {
+        const maxLeft = Math.max(8, window.innerWidth - 60);
+        const maxTop = Math.max(24, window.innerHeight - 48);
+        bar.style.left = Math.min(Math.max(8, savedPos.left), maxLeft) + "px";
+        bar.style.top = Math.min(Math.max(24, savedPos.top), maxTop) + "px";
+        bar.style.right = "auto";
+        bar.style.bottom = "auto";
+      }
+    } catch (e) {}
+    const undoBtn = document.getElementById("craft-undo-btn");
+    const redoBtn = document.getElementById("craft-redo-btn");
+    const delBtn = document.getElementById("craft-del-btn");
+    const rcBtn = document.getElementById("craft-rc-btn");
+    const kbBtn = document.getElementById("craft-kb-btn");
+    const reloadBtn = document.getElementById("craft-reload-btn");
+    const toggleBtn = document.getElementById("craft-toggle-btn");
+    // Draggable + Tappable toggle button
+    let dragStart = null;
+    let didDragPill = false;
+    toggleBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      toggleBtn.setPointerCapture(e.pointerId);
+      const rect = bar.getBoundingClientRect();
+      dragStart = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top };
+      didDragPill = false;
+    });
+    toggleBtn.addEventListener("pointermove", function(e) {
+      if (!dragStart) return;
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
+      if (Math.hypot(dx, dy) > 6) {
+        didDragPill = true;
+        const rect = bar.getBoundingClientRect();
+        const newLeft = Math.min(Math.max(6, dragStart.left + dx), window.innerWidth - rect.width - 6);
+        const newTop = Math.min(Math.max(20, dragStart.top + dy), window.innerHeight - rect.height - 6);
+        bar.style.left = newLeft + "px";
+        bar.style.top = newTop + "px";
+        bar.style.right = "auto";
+        bar.style.bottom = "auto";
+      }
+    });
+    toggleBtn.addEventListener("pointerup", function(e) {
+      if (!dragStart) return;
+      e.stopPropagation();
+      if (didDragPill) {
+        try {
+          const rect = bar.getBoundingClientRect();
+          localStorage.setItem("craft_helper_pos", JSON.stringify({ left: rect.left, top: rect.top }));
+        } catch (err) {}
+      } else {
+        bar.classList.toggle("collapsed");
+      }
+      dragStart = null;
+      didDragPill = false;
+    });
+    undoBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      sendKeyShortcut("z", "KeyZ", 90, true, false);
+      showToast("↩️ Undo");
+    });
+    redoBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      sendKeyShortcut("y", "KeyY", 89, true, false);
+      showToast("↪️ Redo");
+    });
+    delBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      sendKeyShortcut("Delete", "Delete", 46, false, false);
+      sendKeyShortcut("Backspace", "Backspace", 8, false, false);
+    });
+    rcBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      rightClickArmed = !rightClickArmed;
+      rcBtn.classList.toggle("active", rightClickArmed);
+      if (rightClickArmed) showToast("Tap canvas to Right-Click");
+    });
+    kbBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      let input = document.querySelector("input, textarea");
+      if (!input) {
+        input = document.createElement("input");
+        input.type = "text";
+        input.style.cssText = "position:fixed;opacity:0;pointer-events:none;left:0;top:0;width:1px;height:1px;";
+        document.body.appendChild(input);
+      }
+      input.focus();
+    });
+    reloadBtn.addEventListener("pointerdown", function(e) {
+      e.stopPropagation();
+      window.location.replace(window.location.pathname + "?v=" + Date.now());
+    });
+    window.addEventListener("pointerdown", function(e) {
+      if (!rightClickArmed || bar.contains(e.target)) return;
+      rightClickArmed = false;
+      rcBtn.classList.remove("active");
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      const opts = {
+        bubbles: true, cancelable: true,
+        clientX: e.clientX, clientY: e.clientY,
+        screenX: e.screenX, screenY: e.screenY,
+        button: 2, buttons: 2
+      };
+      e.target.dispatchEvent(new PointerEvent("pointerdown", opts));
+      e.target.dispatchEvent(new MouseEvent("mousedown", opts));
+      e.target.dispatchEvent(new MouseEvent("contextmenu", opts));
+      e.target.dispatchEvent(new PointerEvent("pointerup", { ...opts, buttons: 0 }));
+      e.target.dispatchEvent(new MouseEvent("mouseup", { ...opts, buttons: 0 }));
+    }, true);
+    // Passive multi-finger touch gestures (2-finger tap = Undo, 3-finger tap = Redo, 2-finger pinch = Zoom)
+    // Never intercepts mouse, trackpad, keyboard, Apple Pencil, or 1-finger touch events
+    let touchState = null;
+    window.addEventListener("touchstart", function(e) {
+      if (bar.contains(e.target)) return;
+      const count = e.touches.length;
+      if (count >= 2) {
+        const pts = [];
+        for (let i = 0; i < count; i++) {
+          pts.push({ x: e.touches[i].clientX, y: e.touches[i].clientY });
+        }
+        const dist = count === 2 ? Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y) : 0;
+        touchState = {
+          maxFingers: Math.max(touchState ? touchState.maxFingers : 0, count),
+          startTime: touchState ? touchState.startTime : Date.now(),
+          startPts: pts,
+          lastDist: dist,
+          maxMove: touchState ? touchState.maxMove : 0
+        };
+      }
+    }, { passive: true });
+    window.addEventListener("touchmove", function(e) {
+      if (!touchState) return;
+      const count = e.touches.length;
+      if (count >= 2 && touchState.startPts.length >= 2) {
+        const dx0 = e.touches[0].clientX - touchState.startPts[0].x;
+        const dy0 = e.touches[0].clientY - touchState.startPts[0].y;
+        touchState.maxMove = Math.max(touchState.maxMove, Math.hypot(dx0, dy0));
+        if (count === 2) {
+          const x0 = e.touches[0].clientX, y0 = e.touches[0].clientY;
+          const x1 = e.touches[1].clientX, y1 = e.touches[1].clientY;
+          const newDist = Math.hypot(x1 - x0, y1 - y0);
+          const deltaDist = touchState.lastDist - newDist;
+          if (Math.abs(deltaDist) > 3 && touchState.maxMove > 12) {
+            const canvas = document.querySelector("canvas");
+            if (canvas) {
+              canvas.dispatchEvent(new WheelEvent("wheel", {
+                deltaY: deltaDist * 1.4,
+                ctrlKey: true,
+                metaKey: true,
+                clientX: (x0 + x1) / 2,
+                clientY: (y0 + y1) / 2,
+                bubbles: true,
+                cancelable: true
+              }));
+            }
+            touchState.lastDist = newDist;
+          }
+        }
+      }
+    }, { passive: true });
+    window.addEventListener("touchend", function(e) {
+      if (!touchState) return;
+      if (e.touches.length === 0) {
+        const elapsed = Date.now() - touchState.startTime;
+        if (elapsed < 260 && touchState.maxMove < 14) {
+          if (touchState.maxFingers === 2) {
+            sendKeyShortcut("z", "KeyZ", 90, true, false);
+            showToast("↩️ Undo");
+          } else if (touchState.maxFingers === 3) {
+            sendKeyShortcut("y", "KeyY", 89, true, false);
+            showToast("↪️ Redo");
+          }
+        }
+        touchState = null;
+      }
+    }, { passive: true });
+    window.addEventListener("touchcancel", function() {
+      touchState = null;
+    }, { passive: true });
+  });
+})();
+</script>
+</head>
+<body>
+  <canvas id="effectcraft_canvas"></canvas>
+  <div id="loading"><img src="favicon.svg" alt=""><div id="status">Loading EffectCraft…</div></div>
+  <script type="module">
+    import init, * as ec from "./effectcraft_web.js";
+    const t0 = performance.now();
+    window.effectcraftLoad = {};
+    // The agent / test API: the desktop control channel as promises (docs/web.md).
+    window.effectcraft = {
+      request: (method, params) => ec.request(method, params ?? {}),
+      execute: (command, params) => ec.request("engine.execute", { command, params: params ?? {} }),
+      commands: () => ec.request("engine.commands", {}),
+      inspect: () => ec.request("ui.inspect", {}),
+      screenshot: (params) => ec.request("ui.screenshot", params ?? {}),
+      renderFrame: (params) => ec.request("render.frame", { base64: true, ...(params ?? {}) }),
+      files: () => ec.files(),
+      readFile: (path) => ec.readFile(path),
+      addFile: async (fileOrUrl, name) => {
+        let bytes;
+        if (typeof fileOrUrl === "string") {
+          bytes = new Uint8Array(await (await fetch(fileOrUrl)).arrayBuffer());
+          name = name ?? fileOrUrl.split("/").pop();
+        } else {
+          bytes = new Uint8Array(await fileOrUrl.arrayBuffer());
+          name = name ?? fileOrUrl.name;
+        }
+        return ec.addFile(name, bytes);
+      },
+      info: () => ({
+        ...ec.info(),
+        crossOriginIsolated: self.crossOriginIsolated,
+        webgpu: !!navigator.gpu,
+        serviceWorker: (() => {
+          try {
+            return !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+          } catch {
+            return false;
+          }
+        })(),
+        load: window.effectcraftLoad,
+      }),
+      // Browser storage (OPFS / IndexedDB): save without downloading, list, remove, wait for writes.
+      saveToBrowser: (path) => ec.saveToBrowser(path ?? undefined),
+      listStored: () => ec.listStored(),
+      removeStored: (path) => ec.removeStored(path),
+      flush: () => ec.flush(),
+      // A frame rendered in a frame worker (its GPU by default) vs the page's CPU: {maxDiff, meanDiff, over4, …}.
+      workerFrameCheck: (params) => ec.workerFrameCheck(params ?? {}).then(JSON.parse),
+    };
+    // Offline start and install (PWA): the service worker caches the app's files.
+    if (!new URLSearchParams(location.search).has("nosw")) {
+      try {
+        if ("serviceWorker" in navigator && navigator.serviceWorker) {
+          navigator.serviceWorker.register("sw.js").catch((e) => console.warn("service worker:", e));
+        }
+      } catch (e) {
+        console.warn("service worker:", e);
+      }
+    }
+    try {
+      // Compile once: the page and its render workers instantiate the same module.
+      const wasmUrl = new URL("effectcraft_web_bg.wasm", location.href);
+      let module;
+      try {
+        module = await WebAssembly.compileStreaming(fetch(wasmUrl));
+      } catch {
+        module = await WebAssembly.compile(await (await fetch(wasmUrl)).arrayBuffer());
+      }
+      window.effectcraftModule = module;
+      await init({ module_or_path: module });
+      window.effectcraftLoad.wasmMs = performance.now() - t0;
+      await ec.start("effectcraft_canvas");
+      window.effectcraftLoad.readyMs = performance.now() - t0;
+    } catch (e) {
+      const s = document.getElementById("status");
+      if (s) { s.className = "err"; s.textContent = "EffectCraft failed to start:\n" + (e && e.stack || e); }
+      window.effectcraftLoad.error = String(e);
+      throw e;
+    }
+  </script>
+</body>
+</html>
